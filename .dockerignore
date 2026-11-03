@@ -1,0 +1,32 @@
+# Dependencias y runtime que se instalan dentro de la imagen
+vendor
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Secretos y datos locales
+.env
+.env.*.local
+*.log
+
+# Cache y archivos de runtime regenerables (se conservan solo los .gitignore
+# para que la estructura de directorios exista en la imagen)
+storage/*
+!storage/**/.gitignore
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Repos
+.git
+.gitignore
+
+# IDE / OS
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Dumps / artifacts temporales
+*.sql.bak
+*.pgsql
+*.dump

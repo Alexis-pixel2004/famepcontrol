@@ -1,0 +1,115 @@
+name: famep
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/app/Dockerfile
+      args:
+        INSTALL_DEV: "true"
+    image: famep-app:dev
+    working_dir: /var/www/html
+    env_file:
+      - .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+    volumes:
+      - .:/var/www/html
+      - vendor:/var/www/html/vendor
+      - composer-cache:/root/.composer/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - famep-net
+
+  web:
+    image: nginx:alpine
+    ports:
+      - "9090:80"
+    volumes:
+      - .:/var/www/html:ro
+      - ./docker/web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - famep-net
+
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: famep_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d famep_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - famep-net
+
+  adminer:
+    image: adminer:latest
+    profiles: ["dev"]
+    ports:
+      - "9092:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - famep-net
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: famep-n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_HOST: localhost
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5678/
+      GENERIC_TIMEZONE: America/Mexico_City
+      TZ: America/Mexico_City
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - famep-net
+
+  evolution-api:
+    image: evoapicloud/evolution-api:v1.8.2
+    container_name: famep-evolution
+    restart: always
+    ports:
+      - "9091:8080"
+    environment:
+      SERVER_URL: http://localhost:9091
+      AUTHENTICATION_API_KEY: famep_token_seguro_2026
+      AUTHENTICATION_TYPE: apikey
+      TZ: America/Mexico_City
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - famep-net
+
+volumes:
+  pgdata:
+  vendor:
+  composer-cache:
+  n8n_data:
+  evolution_instances:
+
+networks:
+  famep-net:
+    driver: bridge
