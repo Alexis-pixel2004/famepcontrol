@@ -12,12 +12,12 @@
     <button type="button"
             @click="$store.layout.toggle()"
             aria-label="Abrir menú"
-            class="fixed top-4 left-4 z-50 text-slate-500 hover:text-slate-800 focus:outline-none transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="fixed top-4 left-4 z-50 text-slate-500 hover:text-slate-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
     </button>
-    <div class="bg-white p-6 rounded-xl shadow-md w-full max-w-lg">
+    <main class="bg-white p-6 rounded-xl shadow-md w-full max-w-lg">
         @php $conAvance = ! $pieza->sinFasesRegistradas(); @endphp
 
         <div class="flex justify-between items-center mb-1">
@@ -29,7 +29,7 @@
         <p class="text-xs text-gray-500 mb-4">Obra: <strong>{{ $pieza->obra->codigo_obra ?? '—' }}</strong> — {{ $pieza->obra->nombre_obra ?? '' }}</p>
 
         @if($errors->any())
-            <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
+            <div role="alert" aria-live="assertive" class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
                 <ul class="list-disc pl-4">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -88,6 +88,6 @@
                 <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 text-sm">Actualizar Pieza</button>
             </div>
         </form>
-    </div>
+    </main>
 </body>
 </html>

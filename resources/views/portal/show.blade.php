@@ -36,19 +36,19 @@
 
             <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                 <div>
-                    <p class="text-xs text-gray-400">Inicio</p>
+                    <p class="text-xs text-slate-500">Inicio</p>
                     <p class="font-medium text-gray-700">{{ $obra->fecha_inicio?->format('d/m/Y') ?? '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400">Entrega comprometida</p>
+                    <p class="text-xs text-slate-500">Entrega comprometida</p>
                     <p class="font-medium text-gray-700">{{ $obra->fecha_compromiso?->format('d/m/Y') ?? '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400">Marcas</p>
+                    <p class="text-xs text-slate-500">Marcas</p>
                     <p class="font-medium text-gray-700">{{ $marcas->count() }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-400">Estado</p>
+                    <p class="text-xs text-slate-500">Estado</p>
                     <p class="font-medium text-gray-700">
                         {{ $obra->estatus === 'Finalizada' ? 'Terminada' : ($obra->estatus === 'Pendiente' ? 'Por iniciar' : 'En fabricación') }}
                     </p>
@@ -80,8 +80,10 @@
                         </div>
                     </div>
 
-                    <div class="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all
+                    <div class="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden" role="progressbar"
+                         aria-valuenow="{{ $marca['porcentaje'] }}" aria-valuemin="0" aria-valuemax="100"
+                         aria-label="Avance de la marca {{ $marca['clave'] }}">
+                        <div class="h-full rounded-full transition-all motion-reduce:transition-none
                             @if ($marca['porcentaje'] >= 100) bg-emerald-500
                             @elseif ($marca['porcentaje'] > 0) bg-blue-500
                             @else bg-gray-300 @endif"
@@ -114,7 +116,7 @@
                                 @endif
                             </div>
                         @empty
-                            <div class="sm:col-span-3 text-sm text-gray-400">
+                            <div class="sm:col-span-3 text-sm text-slate-500">
                                 Aún no se ha registrado trabajo en esta marca. Se iniciará pronto.
                             </div>
                         @endforelse
@@ -137,7 +139,7 @@
         </div>
     </main>
 
-    <footer class="py-4 text-center text-xs text-gray-400">
+    <footer class="py-4 text-center text-xs text-slate-500">
         FAMEP – Control de Producción y Calidad
     </footer>
 </body>

@@ -36,7 +36,7 @@
         </div>
 
         @if(session('success'))
-            <div class="bg-green-100 text-green-700 p-3 rounded-lg text-sm">
+            <div role="status" aria-live="polite" class="bg-green-100 text-green-700 p-3 rounded-lg text-sm">
                 {{ session('success') }}
             </div>
         @endif
@@ -72,8 +72,10 @@
                     {{ $avanceObra['porcentaje'] }}%
                 </span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="{{ $avanceObra['porcentaje'] === 100 ? 'bg-emerald-600' : 'bg-blue-600' }} h-2.5 rounded-full"
+            <div class="w-full bg-gray-200 rounded-full h-2.5" role="progressbar"
+                 aria-valuenow="{{ $avanceObra['porcentaje'] }}" aria-valuemin="0" aria-valuemax="100"
+                 aria-label="Progreso de la obra {{ $obra->codigo_obra }}">
+                <div class="{{ $avanceObra['porcentaje'] === 100 ? 'bg-emerald-600' : 'bg-blue-600' }} h-2.5 rounded-full transition-all motion-reduce:transition-none"
                      style="width: {{ $avanceObra['porcentaje'] }}%"></div>
             </div>
             <p class="text-xs text-gray-500 mt-2">
@@ -124,15 +126,15 @@
                 <table class="w-full text-left text-sm text-gray-600">
                     <thead class="bg-gray-100 text-xs text-gray-700 uppercase">
                         <tr>
-                            <th class="p-3">Marca</th>
-                            <th class="p-3">Estructura</th>
-                            <th class="p-3">Peso (Kg)</th>
-                            <th class="p-3">Cantidad</th>
-                            <th class="p-3">Avance</th>
-                            <th class="p-3">Fase Actual</th>
-                            <th class="p-3">Estatus</th>
+                            <th scope="col" class="p-3">Marca</th>
+                            <th scope="col" class="p-3">Estructura</th>
+                            <th scope="col" class="p-3">Peso (Kg)</th>
+                            <th scope="col" class="p-3">Cantidad</th>
+                            <th scope="col" class="p-3">Avance</th>
+                            <th scope="col" class="p-3">Fase Actual</th>
+                            <th scope="col" class="p-3">Estatus</th>
                             @if(auth()->user()->esProduccion())
-                                <th class="p-3">Acciones</th>
+                                <th scope="col" class="p-3">Acciones</th>
                             @endif
                         </tr>
                     </thead>
@@ -155,7 +157,7 @@
                                 </td>
                                 <td class="p-3">
                                     @if($pieza->sinFasesRegistradas())
-                                        <span class="text-xs text-gray-400">Sin iniciar</span>
+                                        <span class="text-xs text-slate-500">Sin iniciar</span>
                                     @elseif($faseCur)
                                         <span class="text-xs font-semibold text-gray-700">{{ $faseCur->fase?->nombre }}</span>
                                         <span class="text-[10px] px-1.5 py-0.5 rounded font-bold
@@ -192,14 +194,14 @@
                                 @if(auth()->user()->esProduccion())
                                     <td class="p-3">
                                         <div class="flex items-center gap-3 text-xs">
-                                            <a href="{{ route('piezas.edit', $pieza->id) }}" class="text-slate-600 font-semibold hover:underline">
+                                            <a href="{{ route('piezas.edit', $pieza->id) }}" aria-label="Editar pieza {{ $pieza->clave_marca_pieza }}" class="text-slate-600 font-semibold hover:underline">
                                                 Editar
                                             </a>
                                             @if($pieza->sinFasesRegistradas())
                                                 <form action="{{ route('piezas.destroy', $pieza->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar la pieza {{ $pieza->clave_marca_pieza }}? Esta acción no se puede deshacer.');">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 font-semibold hover:underline">
+                                                    <button type="submit" aria-label="Eliminar pieza {{ $pieza->clave_marca_pieza }}" class="text-red-600 font-semibold hover:underline">
                                                         Eliminar
                                                     </button>
                                                 </form>
@@ -210,7 +212,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ auth()->user()->esProduccion() ? 8 : 7 }}" class="p-4 text-center text-gray-400">No hay piezas registradas en esta obra.</td>
+                                <td colspan="{{ auth()->user()->esProduccion() ? 8 : 7 }}" class="p-4 text-center text-slate-500">No hay piezas registradas en esta obra.</td>
                             </tr>
                         @endforelse
                     </tbody>

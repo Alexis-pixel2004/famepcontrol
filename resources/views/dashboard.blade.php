@@ -40,6 +40,11 @@
     <!-- Contenido Principal del Dashboard -->
     <main class="p-4 md:p-6 max-w-6xl mx-auto space-y-6">
 
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Panel General de Producción</h1>
+            <p class="text-sm text-gray-500">Resumen de obras, avance del taller y marcas en proceso.</p>
+        </div>
+
         <!-- Métricas Gerenciales / KPIs de Obras -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
@@ -69,8 +74,10 @@
                 <h2 class="font-bold text-gray-800 text-base">Cumplimiento General del Taller</h2>
                 <span class="text-sm font-extrabold text-blue-600">{{ $avanceTaller['porcentaje'] }}%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-blue-600 h-3 rounded-full transition-all" style="width: {{ $avanceTaller['porcentaje'] }}%"></div>
+            <div class="w-full bg-gray-200 rounded-full h-3" role="progressbar"
+                 aria-valuenow="{{ $avanceTaller['porcentaje'] }}" aria-valuemin="0" aria-valuemax="100"
+                 aria-label="Progreso general del taller">
+                <div class="bg-blue-600 h-3 rounded-full transition-all motion-reduce:transition-none" style="width: {{ $avanceTaller['porcentaje'] }}%"></div>
             </div>
             <p class="text-xs text-gray-500 mt-2">
                 {{ $avanceTaller['completadas'] }} de {{ $avanceTaller['esperadas'] }} fases completadas
@@ -95,8 +102,10 @@
                                 {{ $item['porcentaje'] }}%
                             </span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3">
-                            <div class="{{ $item['porcentaje'] === 100 ? 'bg-emerald-600' : 'bg-blue-600' }} h-2.5 rounded-full"
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3" role="progressbar"
+                             aria-valuenow="{{ $item['porcentaje'] }}" aria-valuemin="0" aria-valuemax="100"
+                             aria-label="Progreso de la obra {{ $item['obra']->codigo_obra }}">
+                            <div class="{{ $item['porcentaje'] === 100 ? 'bg-emerald-600' : 'bg-blue-600' }} h-2.5 rounded-full transition-all motion-reduce:transition-none"
                                  style="width: {{ $item['porcentaje'] }}%"></div>
                         </div>
                         <p class="text-xs text-gray-500 mb-3">
@@ -117,7 +126,7 @@
                                             {{ $pieza->clave_marca_pieza }}
                                         </a>
                                         @if($detalle['sin_inicio'])
-                                            <span class="ml-1 text-gray-400">&middot; Sin iniciar</span>
+                                            <span class="ml-1 text-slate-500">&middot; Sin iniciar</span>
                                         @elseif($faseCur)
                                             <span class="ml-1 text-gray-500">&rarr; {{ $faseCur->fase?->nombre }}</span>
                                             <span class="ml-1 px-1.5 py-0.5 rounded text-[9px] font-bold
@@ -136,15 +145,15 @@
                                     </span>
                                     <span class="text-gray-500">
                                         {{ $detalle['porcentaje'] }}%
-                                        <span class="text-gray-300">|</span>
-                                        <span class="text-gray-400">{{ $pieza->peso_kg }} kg &times; {{ $pieza->cantidad }}</span>
+                                        <span class="text-gray-300" aria-hidden="true">|</span>
+                                        <span class="text-slate-500">{{ $pieza->peso_kg }} kg &times; {{ $pieza->cantidad }}</span>
                                     </span>
                                 </div>
                             @endforeach
                         </div>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-400 text-center py-6 col-span-full">No hay obras registradas.</p>
+                    <p class="text-xs text-slate-500 text-center py-6 col-span-full">No hay obras registradas.</p>
                 @endforelse
             </div>
         </div>
@@ -176,7 +185,7 @@
                         </div>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-400 text-center py-4">No hay obras registradas.</p>
+                    <p class="text-xs text-slate-500 text-center py-4">No hay obras registradas.</p>
                 @endforelse
             </div>
         </div>
