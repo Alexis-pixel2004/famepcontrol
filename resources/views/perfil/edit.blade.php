@@ -12,7 +12,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('dashboard') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Volver al Panel</a>
+            <a href="{{ route('dashboard') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Volver al Panel</a>
         </div>
         <span class="font-bold text-sm md:text-base">FAMEP Control</span>
     </nav>
@@ -44,13 +44,13 @@
             <p class="text-xs text-gray-500 mb-4">La nueva contraseña debe tener al menos 8 caracteres.</p>
 
             @if(session('success'))
-                <div class="bg-emerald-100 text-emerald-700 p-3 rounded-lg text-sm mb-4">
+                <div role="status" aria-live="polite" class="bg-emerald-100 text-emerald-700 p-3 rounded-lg text-sm mb-4">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if($errors->any())
-                <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
+                <div role="alert" aria-live="assertive" class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
                     <ul class="list-disc pl-4">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -64,25 +64,25 @@
                 @method('PUT')
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Contraseña actual</label>
-                    <input type="password" name="password_actual" required autocomplete="current-password"
-                           class="w-full mt-1 p-2 text-sm border rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                    <label for="password_actual" class="block text-sm font-medium text-gray-700">Contraseña actual</label>
+                    <input type="password" id="password_actual" name="password_actual" required autocomplete="current-password"
+                           class="w-full mt-1 p-2 text-sm border rounded-lg focus:ring-emerald-500 focus:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nueva contraseña</label>
-                    <input type="password" name="password" required autocomplete="new-password"
-                           class="w-full mt-1 p-2 text-sm border rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                    <label for="password" class="block text-sm font-medium text-gray-700">Nueva contraseña</label>
+                    <input type="password" id="password" name="password" required autocomplete="new-password"
+                           class="w-full mt-1 p-2 text-sm border rounded-lg focus:ring-emerald-500 focus:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Confirmar nueva contraseña</label>
-                    <input type="password" name="password_confirmation" required autocomplete="new-password"
-                           class="w-full mt-1 p-2 text-sm border rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar nueva contraseña</label>
+                    <input type="password" id="password_confirmation" name="password_confirmation" required autocomplete="new-password"
+                           class="w-full mt-1 p-2 text-sm border rounded-lg focus:ring-emerald-500 focus:border-emerald-500 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none">
                 </div>
 
                 <div class="flex justify-end pt-2">
-                    <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 text-sm">
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 text-sm focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:outline-none">
                         Actualizar contraseña
                     </button>
                 </div>

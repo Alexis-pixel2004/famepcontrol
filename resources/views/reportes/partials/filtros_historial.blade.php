@@ -1,7 +1,7 @@
 {{-- Filtro extra del historial de marca: selector de marca (pieza). --}}
 <div>
-    <label class="block text-[11px] text-gray-500 mb-1">Marca</label>
-    <select name="pieza_id" class="p-2 text-sm border rounded-lg bg-white min-w-[200px]">
+    <label for="pieza_id" class="block text-[11px] text-gray-500 mb-1">Marca</label>
+    <select id="pieza_id" name="pieza_id" class="p-2 text-sm border rounded-lg bg-white min-w-[200px] focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
         <option value="">Seleccione una marca…</option>
         @foreach($piezasFiltro as $p)
             <option value="{{ $p->id }}" {{ (string) ($filtros['pieza_id'] ?? '') === (string) $p->id ? 'selected' : '' }}>

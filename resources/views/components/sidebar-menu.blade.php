@@ -42,7 +42,7 @@
 
     <nav class="flex-1 p-3 space-y-1">
         <a href="{{ route('dashboard') }}"
-           {{ request()->routeIs('dashboard') ? 'aria-current="page"' : '' }}
+           @if(request()->routeIs('dashboard')) aria-current="page" @endif
            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
             {{ request()->routeIs('dashboard') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -52,7 +52,7 @@
         </a>
 
         <a href="{{ route('obras.index') }}"
-           {{ request()->routeIs('obras.*') ? 'aria-current="page"' : '' }}
+           @if(request()->routeIs('obras.*')) aria-current="page" @endif
            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
             {{ request()->routeIs('obras.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -62,7 +62,7 @@
         </a>
 
         <a href="{{ route('reportes.index') }}"
-           {{ request()->routeIs('reportes.*') ? 'aria-current="page"' : '' }}
+           @if(request()->routeIs('reportes.*')) aria-current="page" @endif
            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
             {{ request()->routeIs('reportes.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -73,7 +73,7 @@
 
         @if(auth()->user()->esProduccion())
         <a href="{{ route('operarios.index') }}"
-           {{ request()->routeIs('operarios.*') ? 'aria-current="page"' : '' }}
+           @if(request()->routeIs('operarios.*')) aria-current="page" @endif
            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
             {{ request()->routeIs('operarios.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -84,7 +84,7 @@
         @endif
 
         <a href="{{ route('clientes.index') }}"
-           {{ request()->routeIs('clientes.*') ? 'aria-current="page"' : '' }}
+           @if(request()->routeIs('clientes.*')) aria-current="page" @endif
            class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
             {{ request()->routeIs('clientes.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -96,7 +96,7 @@
 
     <div class="p-3 border-t border-slate-700">
         <a href="{{ route('perfil.edit') }}"
-           {{ request()->routeIs('perfil.*') ? 'aria-current="page"' : '' }}
+           @if(request()->routeIs('perfil.*')) aria-current="page" @endif
            class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition mb-1 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
             {{ request()->routeIs('perfil.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">

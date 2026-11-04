@@ -12,16 +12,16 @@
     <button type="button"
             @click="$store.layout.toggle()"
             aria-label="Abrir menú"
-            class="fixed top-4 left-4 z-50 text-slate-500 hover:text-slate-800 focus:outline-none transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="fixed top-4 left-4 z-50 text-slate-500 hover:text-slate-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none transition">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
     </button>
-    <div class="bg-white p-6 rounded-xl shadow-md w-full max-w-lg">
+    <main class="bg-white p-6 rounded-xl shadow-md w-full max-w-lg">
         <h1 class="text-xl font-bold text-gray-800 mb-4">Editar Operario</h1>
 
         @if($errors->any())
-            <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
+            <div role="alert" aria-live="assertive" class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
                 <ul class="list-disc pl-4">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -35,53 +35,53 @@
             @method('PUT')
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Clave de Empleado</label>
-                    <input type="text" name="clave_empleado" value="{{ old('clave_empleado', $operario->clave_empleado) }}" required class="w-full mt-1 p-2 border rounded-lg">
+                    <label for="clave_empleado" class="block text-sm font-medium text-gray-700">Clave de Empleado</label>
+                    <input type="text" id="clave_empleado" name="clave_empleado" value="{{ old('clave_empleado', $operario->clave_empleado) }}" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
                 </div>
                 <div class="flex items-end">
-                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 pb-2">
-                        <input type="checkbox" name="activo" value="1" {{ old('activo', $operario->activo) ? 'checked' : '' }} class="rounded border-gray-300">
+                    <label for="activo" class="inline-flex items-center gap-2 text-sm text-gray-700 pb-2">
+                        <input type="checkbox" id="activo" name="activo" value="1" {{ old('activo', $operario->activo) ? 'checked' : '' }} class="rounded border-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
                         Activo
                     </label>
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Nombre</label>
-                <input type="text" name="nombre" value="{{ old('nombre', $operario->nombre) }}" required class="w-full mt-1 p-2 border rounded-lg">
+                <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                <input type="text" id="nombre" name="nombre" value="{{ old('nombre', $operario->nombre) }}" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700">Apellido</label>
-                <input type="text" name="apellido" value="{{ old('apellido', $operario->apellido) }}" required class="w-full mt-1 p-2 border rounded-lg">
+                <label for="apellido" class="block text-sm font-medium text-gray-700">Apellido</label>
+                <input type="text" id="apellido" name="apellido" value="{{ old('apellido', $operario->apellido) }}" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
             </div>
 
             @php
                 $fasesActuales = old('fases', $operario->fasesHabilitadas->pluck('id')->all());
             @endphp
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+            <div role="group" aria-labelledby="fases-label">
+                <p id="fases-label" class="block text-sm font-medium text-gray-700 mb-1">
                     Fases que puede ejecutar
-                    <span class="text-xs text-gray-400">(al menos una; la especialidad se deriva de estas)</span>
-                </label>
+                    <span class="text-xs text-slate-500">(al menos una; la especialidad se deriva de estas)</span>
+                </p>
                 <div class="space-y-2 border border-gray-200 rounded-lg p-3">
                     @foreach($fases as $fase)
-                        <label class="flex items-center gap-2 text-sm text-gray-700">
-                            <input type="checkbox" name="fases[]" value="{{ $fase->id }}"
+                        <label for="fase_{{ $fase->id }}" class="flex items-center gap-2 text-sm text-gray-700">
+                            <input type="checkbox" id="fase_{{ $fase->id }}" name="fases[]" value="{{ $fase->id }}"
                                    {{ in_array($fase->id, $fasesActuales) ? 'checked' : '' }}
-                                   class="rounded border-gray-300">
+                                   class="rounded border-gray-300 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
                             {{ $fase->nombre }}
                         </label>
                     @endforeach
                 </div>
-                <p class="text-[11px] text-gray-400 mt-1">Un operario multifase marca varias; uno de una sola etapa marca solo la suya.</p>
+                <p class="text-[11px] text-slate-500 mt-1">Un operario multifase marca varias; uno de una sola etapa marca solo la suya.</p>
             </div>
 
             <div class="flex justify-end space-x-3 pt-4">
-                <a href="{{ route('operarios.index') }}" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm">Cancelar</a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 text-sm">Guardar Cambios</button>
+                <a href="{{ route('operarios.index') }}" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Cancelar</a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 text-sm focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none">Guardar Cambios</button>
             </div>
         </form>
-    </div>
+    </main>
 </body>
 </html>
