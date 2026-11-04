@@ -18,7 +18,7 @@
 
     @if($hayDatos)
         <div class="relative" style="height: 280px;">
-            <canvas id="{{ $id }}"></canvas>
+            <canvas id="{{ $id }}" role="img" aria-label="Gráfica de reporte: {{ $titulo }}"></canvas>
         </div>
         <script type="application/json" id="{{ $id }}-datos">
             {!! json_encode([
@@ -82,6 +82,6 @@
             })();
         </script>
     @else
-        <p class="text-xs text-gray-400">{{ $vacio }}</p>
+        <p class="text-xs text-slate-500">{{ $vacio }}</p>
     @endif
 </div>

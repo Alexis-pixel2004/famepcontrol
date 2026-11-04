@@ -13,7 +13,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Reportes</a>
+            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Reportes</a>
         </div>
         <span class="font-bold text-sm md:text-base">Dictámenes de Calidad</span>
     </nav>
@@ -36,24 +36,24 @@
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Dictámenes</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['total'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['total'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Aprobados</p>
-                <p class="text-2xl font-bold text-emerald-600">{{ $kpis['pct_aprobado'] }}%</p>
-                <p class="text-[10px] text-gray-400">{{ $kpis['aprobado'] }} de {{ $kpis['total'] }}</p>
+                <p class="text-2xl font-bold text-emerald-600 tabular-nums">{{ $kpis['pct_aprobado'] }}%</p>
+                <p class="text-[10px] text-slate-500 tabular-nums">{{ $kpis['aprobado'] }} de {{ $kpis['total'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Reproceso</p>
-                <p class="text-2xl font-bold text-amber-600">{{ $kpis['reproceso'] }}</p>
+                <p class="text-2xl font-bold text-amber-600 tabular-nums">{{ $kpis['reproceso'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Rechazados</p>
-                <p class="text-2xl font-bold text-red-600">{{ $kpis['rechazado'] }}</p>
+                <p class="text-2xl font-bold text-red-600 tabular-nums">{{ $kpis['rechazado'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Editados</p>
-                <p class="text-2xl font-bold text-slate-700">{{ $kpis['editados'] }}</p>
+                <p class="text-2xl font-bold text-slate-700 tabular-nums">{{ $kpis['editados'] }}</p>
             </div>
         </div>
 
@@ -93,15 +93,17 @@
             <div class="space-y-2">
                 @forelse($porObra as $fila)
                     <div class="flex items-center gap-3">
-                        <span class="text-xs text-gray-600 w-56 truncate" title="{{ $fila['nombre'] }}">{{ $fila['codigo'] }} — {{ $fila['nombre'] }}</span>
-                        <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                        <span class="text-xs text-gray-600 w-56 truncate" title="{{ $fila['nombre'] }}"><span class="font-mono">{{ $fila['codigo'] }}</span> — {{ $fila['nombre'] }}</span>
+                        <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden" role="progressbar"
+                             aria-valuenow="{{ $fila['pct_rechazo'] }}" aria-valuemin="0" aria-valuemax="100"
+                             aria-label="Tasa de rechazo o reproceso de la obra {{ $fila['codigo'] }}">
                             <div class="h-full {{ $fila['pct_rechazo'] >= 50 ? 'bg-red-500' : ($fila['pct_rechazo'] > 0 ? 'bg-amber-500' : 'bg-emerald-500') }}"
                                  style="width: {{ $fila['pct_rechazo'] }}%"></div>
                         </div>
-                        <span class="text-xs font-semibold text-gray-700 w-28 text-right">{{ $fila['rechazo'] }}/{{ $fila['total'] }} ({{ $fila['pct_rechazo'] }}%)</span>
+                        <span class="text-xs font-semibold text-gray-700 w-28 text-right tabular-nums">{{ $fila['rechazo'] }}/{{ $fila['total'] }} ({{ $fila['pct_rechazo'] }}%)</span>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-400">Sin dictámenes en el periodo/filtros seleccionados.</p>
+                    <p class="text-xs text-slate-500">Sin dictámenes en el periodo/filtros seleccionados.</p>
                 @endforelse
             </div>
         </div>
@@ -112,18 +114,18 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-gray-600 text-[11px] uppercase">
                         <tr>
-                            <th class="text-left px-4 py-3 font-semibold">Fecha</th>
-                            <th class="text-left px-4 py-3 font-semibold">Obra / Marca</th>
-                            <th class="text-left px-4 py-3 font-semibold">Fase</th>
-                            <th class="text-left px-4 py-3 font-semibold">Inspector</th>
-                            <th class="text-center px-4 py-3 font-semibold">Resultado</th>
-                            <th class="text-left px-4 py-3 font-semibold">Observación</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Fecha</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Obra / Marca</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Fase</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Inspector</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Resultado</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Observación</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($dictamenes as $d)
                             <tr class="hover:bg-gray-50 align-top">
-                                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
+                                <td class="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">
                                     {{ \App\Support\FechaLocal::formato($d->created_at, 'd/m/Y H:i') }}
                                     @if($d->fueEditado())
                                         <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200"
@@ -133,8 +135,8 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3">
-                                    <span class="font-semibold text-gray-800">{{ $d->fasePieza?->pieza?->obra?->codigo_obra ?? '—' }}</span>
-                                    <span class="block text-[11px] text-gray-500">{{ $d->fasePieza?->pieza?->clave_marca_pieza ?? '—' }}</span>
+                                    <span class="font-semibold text-gray-800 font-mono">{{ $d->fasePieza?->pieza?->obra?->codigo_obra ?? '—' }}</span>
+                                    <span class="block text-[11px] text-slate-500 font-mono tabular-nums">{{ $d->fasePieza?->pieza?->clave_marca_pieza ?? '—' }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-gray-600">{{ $d->fasePieza?->fase?->nombre ?? '—' }}</td>
                                 <td class="px-4 py-3 text-gray-600">{{ $d->inspector?->nombre ?? '—' }}</td>
@@ -147,16 +149,16 @@
                                         {{ $d->resultado === 'Enviado a Reproceso' ? 'En Reproceso' : $d->resultado }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-gray-600 max-w-md">
+                                <td class="px-4 py-3 text-gray-600 max-w-md break-words">
                                     <span class="italic">"{{ $d->descripcion }}"</span>
                                     @if($d->evidencias->count() > 0)
-                                        <span class="block text-[10px] text-gray-400 mt-1">{{ $d->evidencias->count() }} foto(s)</span>
+                                        <span class="block text-[10px] text-slate-500 mt-1 tabular-nums">{{ $d->evidencias->count() }} foto(s)</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-4 py-8 text-center text-xs text-gray-400">
+                                <td colspan="6" class="px-4 py-8 text-center text-xs text-slate-500">
                                     No hay dictámenes que coincidan con los filtros.
                                 </td>
                             </tr>

@@ -12,7 +12,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Reportes</a>
+            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Reportes</a>
         </div>
         <span class="font-bold text-sm md:text-base">Historial de Marca</span>
     </nav>
@@ -40,9 +40,9 @@
             <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-800">{{ $pieza->clave_marca_pieza }}</h2>
+                        <h2 class="text-lg font-bold text-gray-800 font-mono">{{ $pieza->clave_marca_pieza }}</h2>
                         <p class="text-xs text-gray-500 mt-1">
-                            {{ $pieza->obra->codigo_obra ?? '—' }} — {{ $pieza->obra->nombre_obra ?? '—' }}
+                            <span class="font-mono tabular-nums">{{ $pieza->obra->codigo_obra ?? '—' }}</span> — {{ $pieza->obra->nombre_obra ?? '—' }}
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2 text-xs">
@@ -52,7 +52,7 @@
                         <span class="px-2 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
                             {{ $pieza->estatus->nombre ?? '—' }}
                         </span>
-                        <span class="px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
+                        <span class="px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold tabular-nums">
                             {{ $pieza->porcentajeAvance() }}% avance
                         </span>
                     </div>
@@ -90,16 +90,16 @@
                                         </span>
                                     @endif
                                 </div>
-                                <span class="text-[11px] text-gray-400">{{ $evento['fecha'] }}</span>
+                                <span class="text-xs text-slate-500 tabular-nums">{{ $evento['fecha'] }}</span>
                             </div>
-                            <p class="text-xs text-gray-600 mt-2">{{ $evento['detalle'] }}</p>
+                            <p class="text-xs text-gray-600 mt-2 break-words">{{ $evento['detalle'] }}</p>
                             <div class="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-gray-500">
                                 <span>Responsable: <span class="font-medium text-gray-700">{{ $evento['responsable'] }}</span></span>
                                 @if(! empty($evento['resultado']))
                                     <span>Resultado: <span class="font-medium text-gray-700">{{ $evento['resultado'] }}</span></span>
                                 @endif
                                 @if(! empty($evento['fotos']))
-                                    <span>{{ $evento['fotos'] }} evidencia(s)</span>
+                                    <span class="tabular-nums">{{ $evento['fotos'] }} evidencia(s)</span>
                                 @endif
                             </div>
                         </div>
@@ -107,7 +107,7 @@
                 </div>
             @empty
                 <div class="bg-white p-8 rounded-xl border border-dashed border-gray-300 text-center">
-                    <p class="text-sm text-gray-400">Esta marca aún no tiene eventos registrados.</p>
+                    <p class="text-sm text-slate-500">Esta marca aún no tiene eventos registrados.</p>
                 </div>
             @endforelse
         @endif

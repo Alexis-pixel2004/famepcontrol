@@ -12,7 +12,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Reportes</a>
+            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Reportes</a>
         </div>
         <span class="font-bold text-sm md:text-base">Bitácora de Auditoría</span>
     </nav>
@@ -35,19 +35,19 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Movimientos</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['total'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['total'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Creaciones</p>
-                <p class="text-2xl font-bold text-emerald-600">{{ $kpis['creados'] }}</p>
+                <p class="text-2xl font-bold text-emerald-600 tabular-nums">{{ $kpis['creados'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Ediciones</p>
-                <p class="text-2xl font-bold text-amber-600">{{ $kpis['editados'] }}</p>
+                <p class="text-2xl font-bold text-amber-600 tabular-nums">{{ $kpis['editados'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Eliminaciones</p>
-                <p class="text-2xl font-bold text-red-600">{{ $kpis['eliminados'] }}</p>
+                <p class="text-2xl font-bold text-red-600 tabular-nums">{{ $kpis['eliminados'] }}</p>
             </div>
         </div>
 
@@ -59,10 +59,13 @@
                     @foreach($porEntidad as $e)
                         <div class="flex items-center gap-3">
                             <span class="text-xs text-gray-600 w-48 truncate">{{ $e['entidad'] }}</span>
-                            <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                            <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden" role="progressbar"
+                                 aria-valuenow="{{ $kpis['total'] > 0 ? round($e['total'] / $kpis['total'] * 100) : 0 }}"
+                                 aria-valuemin="0" aria-valuemax="100"
+                                 aria-label="Participación de {{ $e['entidad'] }} en los movimientos">
                                 <div class="h-full bg-slate-700" style="width: {{ $kpis['total'] > 0 ? round($e['total'] / $kpis['total'] * 100) : 0 }}%"></div>
                             </div>
-                            <span class="text-xs font-semibold text-gray-700 w-10 text-right">{{ $e['total'] }}</span>
+                            <span class="text-xs font-semibold text-gray-700 w-10 text-right tabular-nums">{{ $e['total'] }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -75,11 +78,11 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-gray-600 text-[11px] uppercase">
                         <tr>
-                            <th class="text-left px-4 py-3 font-semibold">Fecha</th>
-                            <th class="text-left px-4 py-3 font-semibold">Usuario</th>
-                            <th class="text-center px-4 py-3 font-semibold">Acción</th>
-                            <th class="text-left px-4 py-3 font-semibold">Entidad</th>
-                            <th class="text-left px-4 py-3 font-semibold">Detalle</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Fecha</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Usuario</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Acción</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Entidad</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Detalle</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -94,7 +97,7 @@
                                 $clase = $colores[$log->colorAccion()] ?? $colores['slate'];
                             @endphp
                             <tr class="hover:bg-gray-50 align-top">
-                                <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ \App\Support\FechaLocal::formato($log->fecha_hora, 'd/m/Y H:i:s') }}</td>
+                                <td class="px-4 py-3 text-gray-600 whitespace-nowrap tabular-nums">{{ \App\Support\FechaLocal::formato($log->fecha_hora, 'd/m/Y H:i:s') }}</td>
                                 <td class="px-4 py-3">
                                     <span class="font-semibold text-gray-800">{{ $log->usuario?->nombre ?? 'Sistema' }}</span>
                                 </td>
@@ -106,14 +109,14 @@
                                 <td class="px-4 py-3 text-gray-700">
                                     {{ $log->entidad() }}
                                     @if($log->registro_id)
-                                        <span class="block text-[10px] text-gray-400">#{{ $log->registro_id }}</span>
+                                        <span class="block text-[10px] text-slate-500 font-mono tabular-nums">#{{ $log->registro_id }}</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-gray-600 max-w-lg">{{ $log->resumenCambios() }}</td>
+                                <td class="px-4 py-3 text-gray-600 max-w-lg break-words">{{ $log->resumenCambios() }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-xs text-gray-400">
+                                <td colspan="5" class="px-4 py-8 text-center text-xs text-slate-500">
                                     No hay movimientos que coincidan con los filtros.
                                 </td>
                             </tr>
