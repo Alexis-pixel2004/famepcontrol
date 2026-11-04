@@ -37,20 +37,21 @@
 
         <!-- Modal Emergente de ÉXITO -->
         @if(session('success'))
-        <div id="modalNotificacion" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div id="modalNotificacionExito" role="dialog" aria-modal="true" aria-labelledby="modalNotificacionExitoTitulo"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
             <div class="rounded-2xl bg-white px-8 py-10 shadow-2xl max-w-md w-full text-center">
                 <div class="flex justify-center">
                     <div class="rounded-full bg-emerald-100 p-4">
                         <div class="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 p-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-white" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                         </div>
                     </div>
                 </div>
-                <h3 class="my-4 text-center text-2xl font-bold text-gray-800">¡Registro Exitoso!</h3>
+                <h3 id="modalNotificacionExitoTitulo" class="my-4 text-center text-2xl font-bold text-gray-800">¡Registro Exitoso!</h3>
                 <p class="text-center font-normal text-gray-600 text-sm leading-relaxed">{{ session('success') }}</p>
-                <button onclick="document.getElementById('modalNotificacion').remove()"
+                <button onclick="document.getElementById('modalNotificacionExito').remove()"
                         class="mx-auto mt-8 w-full rounded-xl bg-emerald-600 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-emerald-700 transition duration-200 shadow-md">
                     Continuar
                 </button>
@@ -60,20 +61,21 @@
 
         <!-- Modal Emergente de ERROR / RESTRICCIÓN -->
         @if(session('error'))
-        <div id="modalNotificacion" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
+        <div id="modalNotificacionError" role="dialog" aria-modal="true" aria-labelledby="modalNotificacionErrorTitulo"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
             <div class="rounded-2xl bg-white px-8 py-10 shadow-2xl max-w-md w-full text-center">
                 <div class="flex justify-center">
                     <div class="rounded-full bg-red-100 p-4">
                         <div class="flex h-16 w-16 items-center justify-center rounded-full bg-red-500 p-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-white" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                             </svg>
                         </div>
                     </div>
                 </div>
-                <h3 class="my-4 text-center text-2xl font-bold text-gray-800">Acción Bloqueada</h3>
+                <h3 id="modalNotificacionErrorTitulo" class="my-4 text-center text-2xl font-bold text-gray-800">Acción Bloqueada</h3>
                 <p class="text-center font-normal text-gray-600 text-sm leading-relaxed">{{ session('error') }}</p>
-                <button onclick="document.getElementById('modalNotificacion').remove()"
+                <button onclick="document.getElementById('modalNotificacionError').remove()"
                         class="mx-auto mt-8 w-full rounded-xl bg-red-600 px-6 py-3 text-center text-sm font-semibold text-white hover:bg-red-700 transition duration-200 shadow-md">
                     Entendido
                 </button>
@@ -233,7 +235,7 @@
                             @include('piezas.partials.observaciones', ['hist' => $hist])
                         </div>
                     @empty
-                        <div class="bg-white border border-dashed border-gray-300 p-6 rounded-xl text-center text-xs text-gray-400">
+                        <div class="bg-white border border-dashed border-gray-300 p-6 rounded-xl text-center text-xs text-slate-500">
                             No hay fases activas pendientes de evaluación.
                         </div>
                     @endforelse
@@ -273,7 +275,7 @@
                             @include('piezas.partials.observaciones', ['hist' => $hist])
                         </div>
                     @empty
-                        <div class="bg-white border border-dashed border-gray-300 p-6 rounded-xl text-center text-xs text-gray-400">
+                        <div class="bg-white border border-dashed border-gray-300 p-6 rounded-xl text-center text-xs text-slate-500">
                             Aún no hay fases completadas en esta marca.
                         </div>
                     @endforelse

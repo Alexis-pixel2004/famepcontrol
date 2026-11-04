@@ -12,7 +12,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('dashboard') }}" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition">
+            <a href="{{ route('dashboard') }}" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                 &larr; Dashboard
             </a>
             <span class="font-bold text-lg">FAMEP Control</span>
@@ -23,7 +23,7 @@
             </span>
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition">Salir</button>
+                <button type="submit" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1 rounded transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Salir</button>
             </form>
         </div>
     </nav>
@@ -35,20 +35,20 @@
                 <p class="text-xs text-gray-500 mt-1">Cada operario tiene habilitadas las fases que puede ejecutar. Un operario multifase (ej. soldador/pintor) tendrá varias.</p>
             </div>
             @if(auth()->user()->esProduccion())
-                <a href="{{ route('operarios.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+                <a href="{{ route('operarios.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                     + Nuevo Operario
                 </a>
             @endif
         </div>
 
         @if(session('success'))
-            <div class="bg-green-100 text-green-700 p-3 rounded-lg mb-4 text-sm">
+            <div role="status" aria-live="polite" class="bg-green-100 text-green-700 p-3 rounded-lg mb-4 text-sm">
                 {{ session('success') }}
             </div>
         @endif
 
         @if(session('error'))
-            <div class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+            <div role="alert" aria-live="assertive" class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
                 {{ session('error') }}
             </div>
         @endif
@@ -57,7 +57,7 @@
             @forelse($operarios as $op)
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-blue-400 transition">
                     <div class="flex justify-between items-start mb-2">
-                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">{{ $op->clave_empleado }}</span>
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded font-mono">{{ $op->clave_empleado }}</span>
                         <span class="text-xs px-2 py-1 rounded font-semibold {{ $op->activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' }}">
                             {{ $op->activo ? 'Activo' : 'Inactivo' }}
                         </span>
@@ -81,17 +81,17 @@
                     </div>
 
                     <div class="flex justify-between items-center text-xs text-gray-500 pt-3 border-t">
-                        <span>Fases registradas: <strong class="text-gray-800">{{ $op->fases_count }}</strong></span>
+                        <span>Fases registradas: <strong class="text-gray-800 tabular-nums">{{ $op->fases_count }}</strong></span>
                         <div class="flex items-center gap-3">
                             @if(auth()->user()->esProduccion())
-                                <a href="{{ route('operarios.edit', $op->id) }}" class="text-slate-600 font-semibold hover:underline">
+                                <a href="{{ route('operarios.edit', $op->id) }}" aria-label="Editar operario {{ $op->nombre }} {{ $op->apellido }}" class="text-slate-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
                                     Editar
                                 </a>
                                 @if($op->fases_count === 0)
                                     <form action="{{ route('operarios.destroy', $op->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar al operario {{ $op->nombre }} {{ $op->apellido }}? Esta acción no se puede deshacer.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 font-semibold hover:underline">
+                                        <button type="submit" aria-label="Eliminar operario {{ $op->nombre }} {{ $op->apellido }}" class="text-red-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
                                             Eliminar
                                         </button>
                                     </form>

@@ -13,7 +13,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Reportes</a>
+            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Reportes</a>
         </div>
         <span class="font-bold text-sm md:text-base">Productividad por Operario</span>
     </nav>
@@ -37,15 +37,15 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Operarios</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['operarios'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['operarios'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Fases cerradas</p>
-                <p class="text-2xl font-bold text-emerald-600">{{ $kpis['fases'] }}</p>
+                <p class="text-2xl font-bold text-emerald-600 tabular-nums">{{ $kpis['fases'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Marcas distintas</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['piezas'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['piezas'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Fase más frecuente</p>
@@ -75,13 +75,13 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-gray-600 text-[11px] uppercase">
                         <tr>
-                            <th class="text-left px-4 py-3 font-semibold">Operario</th>
-                            <th class="text-left px-4 py-3 font-semibold">Especialidad</th>
-                            <th class="text-center px-4 py-3 font-semibold">Fases</th>
-                            <th class="text-center px-4 py-3 font-semibold">Marcas</th>
-                            <th class="text-center px-4 py-3 font-semibold">Días activo</th>
-                            <th class="text-center px-4 py-3 font-semibold">Ciclo prom.</th>
-                            <th class="text-left px-4 py-3 font-semibold">Desglose</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Operario</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Especialidad</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Fases</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Marcas</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Días activo</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Ciclo prom.</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Desglose</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -92,19 +92,19 @@
                                     @if($op['es_multifase'])
                                         <span class="ml-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200">Multifase</span>
                                     @endif
-                                    <span class="block text-[11px] text-gray-500">{{ $op['operario']->clave_empleado ?? '—' }}</span>
+                                    <span class="block text-[11px] text-slate-500 font-mono tabular-nums">{{ $op['operario']->clave_empleado ?? '—' }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-gray-600">{{ $op['especialidad'] }}</td>
-                                <td class="px-4 py-3 text-center font-bold text-emerald-700">{{ $op['fases'] }}</td>
-                                <td class="px-4 py-3 text-center text-gray-700">{{ $op['piezas'] }}</td>
-                                <td class="px-4 py-3 text-center text-gray-600">{{ $op['dias'] }}</td>
-                                <td class="px-4 py-3 text-center text-gray-600">
+                                <td class="px-4 py-3 text-center font-bold text-emerald-700 tabular-nums">{{ $op['fases'] }}</td>
+                                <td class="px-4 py-3 text-center text-gray-700 tabular-nums">{{ $op['piezas'] }}</td>
+                                <td class="px-4 py-3 text-center text-gray-600 tabular-nums">{{ $op['dias'] }}</td>
+                                <td class="px-4 py-3 text-center text-gray-600 tabular-nums">
                                     {{ $op['ciclo_promedio'] !== null ? $op['ciclo_promedio'] . ' d' : '—' }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex flex-wrap gap-1">
                                         @foreach($op['por_fase'] as $nombreFase => $cantidad)
-                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                                            <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200 tabular-nums">
                                                 {{ $nombreFase }}: {{ $cantidad }}
                                             </span>
                                         @endforeach
@@ -113,7 +113,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-xs text-gray-400">
+                                <td colspan="7" class="px-4 py-8 text-center text-xs text-slate-500">
                                     No hay fases cerradas que coincidan con los filtros.
                                 </td>
                             </tr>
@@ -130,16 +130,19 @@
                 @forelse($porEspecialidad as $esp)
                     <div class="flex items-center gap-3">
                         <span class="text-xs text-gray-600 w-48 truncate">{{ $esp['especialidad'] }}</span>
-                        <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                        <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden" role="progressbar"
+                             aria-valuenow="{{ $kpis['fases'] > 0 ? round($esp['fases'] / $kpis['fases'] * 100) : 0 }}"
+                             aria-valuemin="0" aria-valuemax="100"
+                             aria-label="Participación de {{ $esp['especialidad'] }} en las fases cerradas">
                             <div class="h-full bg-slate-700"
                                  style="width: {{ $kpis['fases'] > 0 ? round($esp['fases'] / $kpis['fases'] * 100) : 0 }}%"></div>
                         </div>
-                        <span class="text-xs font-semibold text-gray-700 w-40 text-right">
+                        <span class="text-xs font-semibold text-gray-700 w-40 text-right tabular-nums">
                             {{ $esp['operarios'] }} operario(s) · {{ $esp['fases'] }} fases
                         </span>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-400">Sin datos en el periodo/filtros seleccionados.</p>
+                    <p class="text-xs text-slate-500">Sin datos en el periodo/filtros seleccionados.</p>
                 @endforelse
             </div>
         </div>

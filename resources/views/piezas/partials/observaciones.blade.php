@@ -10,14 +10,14 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="font-bold text-gray-800 block">{{ $obs->inspector->nombre ?? 'Inspector' }}</span>
-                        <span class="text-[10px] text-gray-400 block mt-0.5">
+                        <span class="text-xs text-slate-500 block mt-0.5 tabular-nums">
                             {{ \App\Support\FechaLocal::formato($obs->fechaInspeccion(), 'd/m/Y h:i A') }}
                         </span>
 
                         @if($obs->fueEditado())
                             <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200"
                                   title="Editado por {{ $obs->editadoPor->nombre ?? 'Calidad' }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                                 </svg>
                                 Editado {{ \App\Support\FechaLocal::formato($obs->fechaEdicion(), 'd/m/Y h:i A') }}
@@ -38,13 +38,13 @@
 
                 @if(auth()->user()->esCalidad() && ! $hist->dictamenesInmutables())
                     <div class="flex items-center gap-3 pt-1">
-                        <a href="{{ route('calidad.edit', $obs->id) }}" class="text-slate-600 font-semibold hover:underline">
+                        <a href="{{ route('calidad.edit', $obs->id) }}" aria-label="Editar dictamen #{{ $obs->id }}" class="text-slate-600 font-semibold hover:underline">
                             Editar
                         </a>
                         <form action="{{ route('calidad.destroy', $obs->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este dictamen de calidad? Esta acción no se puede deshacer.');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="text-red-600 font-semibold hover:underline">
+                            <button type="submit" aria-label="Eliminar dictamen #{{ $obs->id }}" class="text-red-600 font-semibold hover:underline">
                                 Eliminar
                             </button>
                         </form>
@@ -59,9 +59,9 @@
                     <div class="pt-2 border-t border-gray-100">
                         <div class="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
                             @foreach($obs->evidencias as $foto)
-                                <a href="{{ asset('storage/' . $foto->ruta_archivo) }}" target="_blank" class="block group overflow-hidden rounded-lg border bg-black/5">
+                                <a href="{{ asset('storage/' . $foto->ruta_archivo) }}" target="_blank" rel="noopener noreferrer" class="block group overflow-hidden rounded-lg border bg-black/5">
                                     <img src="{{ asset('storage/' . $foto->ruta_archivo) }}"
-                                         alt="Evidencia Inspección"
+                                         alt="Evidencia de la inspección #{{ $obs->id }}"
                                          class="h-16 w-full object-cover group-hover:scale-105 transition duration-150">
                                 </a>
                             @endforeach

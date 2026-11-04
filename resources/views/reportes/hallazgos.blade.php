@@ -13,7 +13,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Reportes</a>
+            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Reportes</a>
         </div>
         <span class="font-bold text-sm md:text-base">Hallazgos por Fase y Obra</span>
     </nav>
@@ -36,15 +36,15 @@
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Dictámenes</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['total'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['total'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Hallazgos</p>
-                <p class="text-2xl font-bold text-red-600">{{ $kpis['hallazgos'] }}</p>
+                <p class="text-2xl font-bold text-red-600 tabular-nums">{{ $kpis['hallazgos'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">% Hallazgo</p>
-                <p class="text-2xl font-bold text-amber-600">{{ $kpis['pct'] }}%</p>
+                <p class="text-2xl font-bold text-amber-600 tabular-nums">{{ $kpis['pct'] }}%</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Fase crítica</p>
@@ -74,35 +74,43 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-gray-600 text-[11px] uppercase">
                         <tr>
-                            <th class="text-left px-4 py-3 font-semibold">Fase</th>
-                            <th class="text-center px-4 py-3 font-semibold">Dictámenes</th>
-                            <th class="text-center px-4 py-3 font-semibold">Aprobados</th>
-                            <th class="text-center px-4 py-3 font-semibold">Reproceso</th>
-                            <th class="text-center px-4 py-3 font-semibold">Rechazados</th>
-                            <th class="text-center px-4 py-3 font-semibold">Hallazgos</th>
-                            <th class="text-left px-4 py-3 font-semibold">% Hallazgo</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Fase</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Dictámenes</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Aprobados</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Reproceso</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Rechazados</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Hallazgos</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">% Hallazgo</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach($porFase as $f)
+                        @forelse($porFase as $f)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 font-semibold text-gray-800">{{ $f['fase']->nombre }}</td>
-                                <td class="px-4 py-3 text-center text-gray-700">{{ $f['total'] }}</td>
-                                <td class="px-4 py-3 text-center text-emerald-700">{{ $f['aprobado'] }}</td>
-                                <td class="px-4 py-3 text-center text-amber-700">{{ $f['reproceso'] }}</td>
-                                <td class="px-4 py-3 text-center text-red-700">{{ $f['rechazado'] }}</td>
-                                <td class="px-4 py-3 text-center font-bold text-gray-800">{{ $f['hallazgos'] }}</td>
+                                <td class="px-4 py-3 text-center text-gray-700 tabular-nums">{{ $f['total'] }}</td>
+                                <td class="px-4 py-3 text-center text-emerald-700 tabular-nums">{{ $f['aprobado'] }}</td>
+                                <td class="px-4 py-3 text-center text-amber-700 tabular-nums">{{ $f['reproceso'] }}</td>
+                                <td class="px-4 py-3 text-center text-red-700 tabular-nums">{{ $f['rechazado'] }}</td>
+                                <td class="px-4 py-3 text-center font-bold text-gray-800 tabular-nums">{{ $f['hallazgos'] }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-28 h-2 rounded-full bg-gray-200 overflow-hidden">
+                                        <div class="w-28 h-2 rounded-full bg-gray-200 overflow-hidden" role="progressbar"
+                                             aria-valuenow="{{ $f['pct_hallazgo'] }}" aria-valuemin="0" aria-valuemax="100"
+                                             aria-label="Porcentaje de hallazgos en la fase {{ $f['fase']->nombre }}">
                                             <div class="h-full {{ $f['pct_hallazgo'] >= 50 ? 'bg-red-500' : ($f['pct_hallazgo'] > 0 ? 'bg-amber-500' : 'bg-emerald-500') }}"
                                                  style="width: {{ $f['pct_hallazgo'] }}%"></div>
                                         </div>
-                                        <span class="text-xs font-semibold text-gray-700">{{ $f['pct_hallazgo'] }}%</span>
+                                        <span class="text-xs font-semibold text-gray-700 tabular-nums">{{ $f['pct_hallazgo'] }}%</span>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-4 py-8 text-center text-xs text-slate-500">
+                                    No hay hallazgos que coincidan con los filtros.
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -114,15 +122,17 @@
             <div class="space-y-2">
                 @forelse($porObra as $obra)
                     <div class="flex items-center gap-3">
-                        <span class="text-xs text-gray-600 w-56 truncate" title="{{ $obra['nombre'] }}">{{ $obra['codigo'] }} — {{ $obra['nombre'] }}</span>
-                        <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                        <span class="text-xs text-gray-600 w-56 truncate" title="{{ $obra['nombre'] }}"><span class="font-mono">{{ $obra['codigo'] }}</span> — {{ $obra['nombre'] }}</span>
+                        <div class="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden" role="progressbar"
+                             aria-valuenow="{{ $obra['pct_hallazgo'] }}" aria-valuemin="0" aria-valuemax="100"
+                             aria-label="Porcentaje de hallazgos de la obra {{ $obra['codigo'] }}">
                             <div class="h-full {{ $obra['pct_hallazgo'] >= 50 ? 'bg-red-500' : ($obra['pct_hallazgo'] > 0 ? 'bg-amber-500' : 'bg-emerald-500') }}"
                                  style="width: {{ $obra['pct_hallazgo'] }}%"></div>
                         </div>
-                        <span class="text-xs font-semibold text-gray-700 w-32 text-right">{{ $obra['hallazgos'] }}/{{ $obra['total'] }} ({{ $obra['pct_hallazgo'] }}%)</span>
+                        <span class="text-xs font-semibold text-gray-700 w-32 text-right tabular-nums">{{ $obra['hallazgos'] }}/{{ $obra['total'] }} ({{ $obra['pct_hallazgo'] }}%)</span>
                     </div>
                 @empty
-                    <p class="text-xs text-gray-400">Sin dictámenes en el periodo/filtros seleccionados.</p>
+                    <p class="text-xs text-slate-500">Sin dictámenes en el periodo/filtros seleccionados.</p>
                 @endforelse
             </div>
         </div>

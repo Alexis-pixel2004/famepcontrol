@@ -27,7 +27,7 @@
             </p>
 
             @if($errors->any())
-                <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
+                <div role="alert" aria-live="assertive" class="bg-red-100 text-red-700 p-3 rounded-lg text-sm mb-4">
                     <ul class="list-disc pl-4">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -56,7 +56,7 @@
 
                 @if($dictamen->evidencias && $dictamen->evidencias->count() > 0)
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Evidencias actuales <span class="text-xs text-gray-400">(marca las que quieras eliminar)</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Evidencias actuales <span class="text-xs text-slate-500">(marca las que quieras eliminar)</span></label>
                         <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
                             @foreach($dictamen->evidencias as $foto)
                                 <label class="relative block cursor-pointer group">
@@ -71,7 +71,7 @@
                 @endif
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Agregar nueva foto de evidencia <span class="text-xs text-gray-400">(opcional)</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Agregar nueva foto de evidencia <span class="text-xs text-slate-500">(opcional)</span></label>
                     <input type="file" name="foto" accept="image/*" capture="environment" class="text-sm text-gray-500">
                 </div>
 

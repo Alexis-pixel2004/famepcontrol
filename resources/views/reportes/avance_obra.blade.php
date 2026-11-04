@@ -13,7 +13,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Reportes</a>
+            <a href="{{ route('reportes.index') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Reportes</a>
         </div>
         <span class="font-bold text-sm md:text-base">Avance por Obra</span>
     </nav>
@@ -30,23 +30,23 @@
         <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Obras</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['obras'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['obras'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Marcas</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['marcas'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['marcas'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Liberadas</p>
-                <p class="text-2xl font-bold text-emerald-600">{{ $kpis['liberadas'] }}</p>
+                <p class="text-2xl font-bold text-emerald-600 tabular-nums">{{ $kpis['liberadas'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Fases</p>
-                <p class="text-2xl font-bold text-gray-800">{{ $kpis['completadas'] }}/{{ $kpis['esperadas'] }}</p>
+                <p class="text-2xl font-bold text-gray-800 tabular-nums">{{ $kpis['completadas'] }}/{{ $kpis['esperadas'] }}</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                 <p class="text-[11px] text-gray-500 uppercase font-semibold">Avance</p>
-                <p class="text-2xl font-bold text-slate-800">{{ $kpis['porcentaje'] }}%</p>
+                <p class="text-2xl font-bold text-slate-800 tabular-nums">{{ $kpis['porcentaje'] }}%</p>
             </div>
         </div>
 
@@ -93,32 +93,34 @@
                 <table class="w-full text-sm">
                     <thead class="bg-slate-50 text-gray-600 text-[11px] uppercase">
                         <tr>
-                            <th class="text-left px-4 py-3 font-semibold">Obra</th>
-                            <th class="text-left px-4 py-3 font-semibold">Cliente</th>
-                            <th class="text-center px-4 py-3 font-semibold">Marcas</th>
-                            <th class="text-center px-4 py-3 font-semibold">Liberadas</th>
-                            <th class="text-center px-4 py-3 font-semibold">Fases</th>
-                            <th class="text-center px-4 py-3 font-semibold">Avance</th>
-                            <th class="text-center px-4 py-3 font-semibold">Estado</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Obra</th>
+                            <th scope="col" class="text-left px-4 py-3 font-semibold">Cliente</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Marcas</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Liberadas</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Fases</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Avance</th>
+                            <th scope="col" class="text-center px-4 py-3 font-semibold">Estado</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($filas as $fila)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3">
-                                    <span class="font-semibold text-gray-800">{{ $fila['obra']->codigo_obra }}</span>
-                                    <span class="block text-[11px] text-gray-500">{{ $fila['obra']->nombre_obra }}</span>
+                                    <span class="font-semibold text-gray-800 font-mono">{{ $fila['obra']->codigo_obra }}</span>
+                                    <span class="block text-[11px] text-slate-500">{{ $fila['obra']->nombre_obra }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-gray-600">{{ $fila['obra']->cliente }}</td>
-                                <td class="px-4 py-3 text-center text-gray-700">{{ $fila['marcas'] }}</td>
-                                <td class="px-4 py-3 text-center text-emerald-700 font-semibold">{{ $fila['liberadas'] }}</td>
-                                <td class="px-4 py-3 text-center text-gray-600">{{ $fila['completadas'] }}/{{ $fila['esperadas'] }}</td>
+                                <td class="px-4 py-3 text-center text-gray-700 tabular-nums">{{ $fila['marcas'] }}</td>
+                                <td class="px-4 py-3 text-center text-emerald-700 font-semibold tabular-nums">{{ $fila['liberadas'] }}</td>
+                                <td class="px-4 py-3 text-center text-gray-600 tabular-nums">{{ $fila['completadas'] }}/{{ $fila['esperadas'] }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center gap-2 justify-center">
-                                        <div class="w-20 h-2 rounded-full bg-gray-200 overflow-hidden">
+                                        <div class="w-20 h-2 rounded-full bg-gray-200 overflow-hidden" role="progressbar"
+                                             aria-valuenow="{{ $fila['porcentaje'] }}" aria-valuemin="0" aria-valuemax="100"
+                                             aria-label="Avance de la obra {{ $fila['obra']->codigo_obra }}">
                                             <div class="h-full bg-emerald-500" style="width: {{ $fila['porcentaje'] }}%"></div>
                                         </div>
-                                        <span class="text-xs font-semibold text-gray-700">{{ $fila['porcentaje'] }}%</span>
+                                        <span class="text-xs font-semibold text-gray-700 tabular-nums">{{ $fila['porcentaje'] }}%</span>
                                     </div>
                                 </td>
                                 <td class="px-4 py-3 text-center">
@@ -133,7 +135,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-4 py-8 text-center text-xs text-gray-400">
+                                <td colspan="7" class="px-4 py-8 text-center text-xs text-slate-500">
                                     No hay obras que coincidan con los filtros.
                                 </td>
                             </tr>

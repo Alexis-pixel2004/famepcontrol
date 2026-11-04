@@ -24,7 +24,7 @@
         </div>
 
         @if (session('success'))
-            <div class="bg-emerald-100 text-emerald-800 p-3 rounded-lg text-sm">{{ session('success') }}</div>
+            <div role="status" aria-live="polite" class="bg-emerald-100 text-emerald-800 p-3 rounded-lg text-sm">{{ session('success') }}</div>
         @endif
 
         @forelse ($obrasAvance as $obra)
@@ -48,8 +48,10 @@
                             <span>Avance de la obra</span>
                             <span class="font-semibold text-gray-700">{{ $obra['porcentaje'] }}%</span>
                         </div>
-                        <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                            <div class="h-full rounded-full transition-all
+                        <div class="h-2.5 bg-gray-200 rounded-full overflow-hidden" role="progressbar"
+                             aria-valuenow="{{ $obra['porcentaje'] }}" aria-valuemin="0" aria-valuemax="100"
+                             aria-label="Avance de la obra {{ $obra['codigo_obra'] }}">
+                            <div class="h-full rounded-full transition-all motion-reduce:transition-none
                                 @if ($obra['porcentaje'] >= 100) bg-emerald-500
                                 @elseif ($obra['porcentaje'] > 0) bg-blue-500
                                 @else bg-gray-300 @endif"
@@ -59,19 +61,19 @@
 
                     <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                         <div>
-                            <p class="text-xs text-gray-400">Inicio</p>
+                            <p class="text-xs text-slate-500">Inicio</p>
                             <p class="font-medium text-gray-700">{{ $obra['fecha_inicio'] }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-gray-400">Entrega comprometida</p>
+                            <p class="text-xs text-slate-500">Entrega comprometida</p>
                             <p class="font-medium text-gray-700">{{ $obra['fecha_compromiso'] }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-gray-400">Marcas listas</p>
+                            <p class="text-xs text-slate-500">Marcas listas</p>
                             <p class="font-medium text-gray-700">{{ $obra['marcas_listas'] }} de {{ $obra['total_marcas'] }}</p>
                         </div>
                         <div>
-                            <p class="text-xs text-gray-400">En qué estamos</p>
+                            <p class="text-xs text-slate-500">En qué estamos</p>
                             <p class="font-medium text-gray-700">{{ $obra['estatus_llano'] }}</p>
                         </div>
                     </div>
@@ -87,12 +89,12 @@
         @empty
             <div class="bg-white rounded-xl shadow-md p-8 text-center">
                 <p class="text-gray-500">Todavía no tenemos obras registradas a tu nombre.</p>
-                <p class="text-sm text-gray-400 mt-1">Si acabas de hacer un pedido, comunícate con el taller.</p>
+                <p class="text-sm text-slate-500 mt-1">Si acabas de hacer un pedido, comunícate con el taller.</p>
             </div>
         @endforelse
     </main>
 
-    <footer class="py-4 text-center text-xs text-gray-400">
+    <footer class="py-4 text-center text-xs text-slate-500">
         FAMEP – Control de Producción y Calidad
     </footer>
 </body>

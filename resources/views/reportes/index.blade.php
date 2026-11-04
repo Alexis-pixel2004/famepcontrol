@@ -12,7 +12,7 @@
     <nav class="bg-slate-800 text-white p-4 flex justify-between items-center shadow-md">
         <div class="flex items-center space-x-3">
             <x-sidebar-toggle />
-            <a href="{{ route('dashboard') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded">&larr; Volver al Panel</a>
+            <a href="{{ route('dashboard') }}" class="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">&larr; Volver al Panel</a>
         </div>
         <span class="font-bold text-sm md:text-base">FAMEP Reportes</span>
     </nav>
@@ -26,7 +26,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @foreach($reportes as $reporte)
                 <a href="{{ route($reporte['ruta']) }}"
-                   class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition block">
+                   class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-300 transition block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
                     <div class="flex items-start gap-3">
                         <span class="shrink-0 w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                             @include('reportes.partials.icono', ['icono' => $reporte['icono']])
@@ -41,7 +41,7 @@
         </div>
 
         @if($reportes->isEmpty())
-            <div class="bg-white border border-dashed border-gray-300 p-6 rounded-xl text-center text-xs text-gray-400">
+            <div class="bg-white border border-dashed border-gray-300 p-6 rounded-xl text-center text-xs text-slate-500">
                 No hay reportes disponibles para tu rol.
             </div>
         @endif

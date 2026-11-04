@@ -10,15 +10,14 @@
     $gridClase   = $variante === 'activa' ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-3 gap-1.5';
     $claseLink   = $variante === 'activa' ? 'block group overflow-hidden rounded-lg border bg-black/5' : 'block overflow-hidden rounded border';
     $claseImg    = $variante === 'activa' ? 'h-20 w-full object-cover group-hover:opacity-85 transition' : 'h-14 w-full object-cover hover:opacity-85';
-    $alt         = $variante === 'activa' ? ' alt="Evidencia"' : '';
 @endphp
 @if($hist->evidencias && $hist->evidencias->count() > 0)
     <div class="{{ $envuelve }}">
         <p class="{{ $claseTitulo }}">{{ $titulo }}</p>
         <div class="{{ $gridClase }}">
             @foreach($hist->evidencias as $evidencia)
-                <a href="{{ asset('storage/' . $evidencia->ruta_archivo) }}" target="_blank" class="{{ $claseLink }}">
-                    <img src="{{ asset('storage/' . $evidencia->ruta_archivo) }}"{{ $alt }} class="{{ $claseImg }}">
+                <a href="{{ asset('storage/' . $evidencia->ruta_archivo) }}" target="_blank" rel="noopener noreferrer" class="{{ $claseLink }}">
+                    <img src="{{ asset('storage/' . $evidencia->ruta_archivo) }}" alt="Evidencia fotográfica de la fase {{ $hist->fase->nombre }}" class="{{ $claseImg }}">
                 </a>
             @endforeach
         </div>
