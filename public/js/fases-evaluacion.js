@@ -88,7 +88,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 3. Aviso en la UI cuando hay operarios bloqueados por su especialidad.
+        // 3. Si la fase ya tiene operario asignado, lo preseleccionamos para
+        //    no volver a elegirlo al cerrar o al retomar un reproceso.
+        //    En "En Proceso" la REGLA 2 exige cambiarlo, por eso se omite.
+        if (operarioActualId && ! esEnProceso) {
+            const opcionActual = Array.from(selectOperario.options)
+                .find(option => option.value === operarioActualId);
+
+            if (opcionActual && ! opcionActual.disabled && ! opcionActual.hidden) {
+                selectOperario.value = operarioActualId;
+            }
+        }
+
+        // 4. Aviso en la UI cuando hay operarios bloqueados por su especialidad.
         if (avisoOperario) {
             if (hayIncompatibles) {
                 avisoOperario.textContent = `Hay ${incompatibles.length} operario(s) no habilitado(s) para esta fase; se ocultan de la lista.`;

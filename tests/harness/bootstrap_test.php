@@ -21,6 +21,27 @@ Http::fake();
 // no comparten $errors (en producción lo hace ShareErrorsFromSession).
 View::share('errors', new ViewErrorBag());
 
+// Operario aislado para la suite. Sin fases configuradas es comodín
+// (Operario::puedeHacerFase devuelve true), así las pruebas no dependen de
+// los operarios ni de las asignaciones reales de la base de datos.
+if (! function_exists('operarioDePrueba')) {
+    function operarioDePrueba(string $prefijo = 'TST', array $fases = []): \App\Models\Operario
+    {
+        $operario = \App\Models\Operario::create([
+            'clave_empleado' => 'T-' . $prefijo . '-' . strtoupper(\Illuminate\Support\Str::random(4)),
+            'nombre'         => 'Operario',
+            'apellido'       => 'Prueba ' . $prefijo,
+            'activo'         => true,
+        ]);
+
+        if ($fases !== []) {
+            $operario->fasesHabilitadas()->sync($fases);
+        }
+
+        return $operario;
+    }
+}
+
 $script = $argv[1] ?? null;
 
 if ($script === null) {

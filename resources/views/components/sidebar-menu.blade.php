@@ -92,6 +92,17 @@
             </svg>
             Clientes
         </a>
+        @if(auth()->user()->esCalidad())
+        <a href="{{ route('whatsapp.qr') }}"
+           @if(request()->routeIs('whatsapp.*')) aria-current="page" @endif
+           class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
+            {{ request()->routeIs('whatsapp.*') ? 'bg-slate-700 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white' }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875h5.25v5.25H3.75v-5.25zm11.25 0h5.25v5.25H15V4.875zM3.75 15h5.25v5.25H3.75V15zm8.25-2.25h2.25v2.25H12v-2.25zm3.75 3.75h2.25v2.25H15.75v-2.25zm3.75-3.75h2.25v2.25h-2.25v-2.25z" />
+            </svg>
+            WhatsApp
+        </a>
+        @endif
     </nav>
 
     <div class="p-3 border-t border-slate-700">

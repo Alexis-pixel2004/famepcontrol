@@ -45,6 +45,12 @@
             </div>
         @endif
 
+        @if(session('error'))
+            <div role="alert" class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
@@ -54,6 +60,8 @@
                             <th scope="col" class="px-4 py-3">Correo</th>
                             <th scope="col" class="px-4 py-3">Código de acceso</th>
                             <th scope="col" class="px-4 py-3 text-center">Obras asignadas</th>
+                            <th scope="col" class="px-4 py-3 text-center">Estado</th>
+                            <th scope="col" class="px-4 py-3 text-right">Acciones</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -69,10 +77,31 @@
                                 <td class="px-4 py-3 text-center font-medium text-gray-700 tabular-nums">
                                     {{ $cliente->obras_asignadas_count }}
                                 </td>
+                                <td class="px-4 py-3 text-center">
+                                    @if($cliente->activo)
+                                        <span class="inline-block px-2.5 py-1 rounded-md bg-green-100 text-green-700 text-xs font-bold">Activo</span>
+                                    @else
+                                        <span class="inline-block px-2.5 py-1 rounded-md bg-slate-200 text-slate-600 text-xs font-bold">Inactivo</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ route('clientes.edit', $cliente->id) }}" class="text-blue-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded" aria-label="Editar cliente {{ $cliente->nombre }}">
+                                            Editar
+                                        </a>
+                                        <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este cliente? Esta acción no se puede deshacer.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" aria-label="Eliminar cliente {{ $cliente->nombre }}" class="text-red-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                                <td colspan="6" class="px-4 py-8 text-center text-gray-500">
                                     Aún no hay cuentas de clientes registradas.
                                 </td>
                             </tr>

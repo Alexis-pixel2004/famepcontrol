@@ -194,4 +194,40 @@ check(str_contains($htmlPortal, 'Obra Portal'), 'portal: obra visible antes de e
 $htmlPortalDespues = (new \App\Http\Controllers\ClienteController)->ver('FAMEP-TST1')->render();
 check(! str_contains($htmlPortalDespues, 'Obra Portal'), 'portal: obra eliminada ya no se muestra');
 
+echo "== B5: cliente_usuario_id debe ser rol 3 ==\n";
+
+$invalido = null;
+try {
+    (new ObraController)->store(xpost([
+        'codigo_obra'        => 'TEST-PORTAL-002',
+        'nombre_obra'        => 'Obra con jefe',
+        'cliente'            => 'Cliente X',
+        'fecha_inicio'       => '2026-10-01',
+        'fecha_compromiso'   => '2026-12-31',
+        'cliente_usuario_id' => Auth::id(), // Producción, rol 1
+    ]));
+} catch (\Illuminate\Validation\ValidationException $e) {
+    $invalido = $e;
+}
+check($invalido !== null, 'store: rechaza un usuario que no es cliente');
+check($invalido !== null && array_key_exists('cliente_usuario_id', $invalido->errors()), 'store: el error apunta a cliente_usuario_id');
+check(Obra::where('codigo_obra', 'TEST-PORTAL-002')->doesntExist(), 'store: no crea la obra invalida');
+
+$clienteValido = User::create([
+    'nombre' => 'Cliente Rol Tres',
+    'email' => 'rol3-obras@famep.com',
+    'password_hash' => bcrypt('x'),
+    'rol_id' => 3,
+    'activo' => true,
+]);
+(new ObraController)->store(xpost([
+    'codigo_obra'        => 'TEST-PORTAL-003',
+    'nombre_obra'        => 'Obra con cliente valido',
+    'cliente'            => 'Cliente X',
+    'fecha_inicio'       => '2026-10-01',
+    'fecha_compromiso'   => '2026-12-31',
+    'cliente_usuario_id' => $clienteValido->id,
+]));
+check((int) Obra::where('codigo_obra', 'TEST-PORTAL-003')->value('cliente_usuario_id') === (int) $clienteValido->id, 'store: acepta un cliente rol 3');
+
 echo "\nResultado: {$GLOBALS['ok']} OK, {$GLOBALS['fail']} FAIL\n";

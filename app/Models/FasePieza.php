@@ -91,6 +91,21 @@ class FasePieza extends Model
      * Calidad) no se reabre: es un estado posterior e independiente del
      * dictamen, por lo que se respeta tal cual.
      */
+    /**
+     * Nombre del estado de fase que corresponde a un resultado de dictamen.
+     * Se centraliza para que el recálculo y las validaciones previas usen
+     * exactamente la misma equivalencia.
+     */
+    public static function estadoParaResultado(?string $resultado): string
+    {
+        return match ($resultado) {
+            'Aprobado'            => 'Aprobada por Calidad',
+            'Enviado a Reproceso' => 'En Reproceso',
+            'Rechazado'           => 'Rechazada',
+            default               => 'En Proceso',
+        };
+    }
+
     public function recalcularEstadoDesdeDictamenes(): void
     {
         if ($this->terminada()) {
@@ -104,12 +119,7 @@ class FasePieza extends Model
             ->reorder('id', 'desc')
             ->value('resultado');
 
-        $nombre = match ($ultimo) {
-            'Aprobado'            => 'Aprobada por Calidad',
-            'Enviado a Reproceso' => 'En Reproceso',
-            'Rechazado'           => 'Rechazada',
-            default               => 'En Proceso',
-        };
+        $nombre = self::estadoParaResultado($ultimo);
 
         $estatusId = CatEstatusFase::where('nombre', $nombre)->value('id');
 

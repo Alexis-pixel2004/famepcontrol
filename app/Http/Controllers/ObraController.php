@@ -34,11 +34,16 @@ class ObraController extends Controller
             'codigo_obra' => 'required|string|unique:obras,codigo_obra',
             'nombre_obra' => 'required|string|max:255',
             'cliente' => 'required|string|max:255',
-            'cliente_usuario_id' => 'nullable|exists:usuarios,id',
+            // Solo una cuenta de cliente (rol 3) puede ver una obra en el portal.
+            'cliente_usuario_id' => [
+                'nullable',
+                Rule::exists('usuarios', 'id')->where('rol_id', 3),
+            ],
             'fecha_inicio' => 'required|date',
             'fecha_compromiso' => 'required|date|after_or_equal:fecha_inicio',
         ], [
             'codigo_obra.unique' => 'El código de obra ya existe.',
+            'cliente_usuario_id.exists' => 'La cuenta seleccionada no es un cliente con acceso al portal.',
             'fecha_compromiso.after_or_equal' => 'La fecha de compromiso no puede ser anterior al inicio.',
         ]);
 
@@ -80,7 +85,7 @@ public function show($id)
         ->filter(fn($p) => in_array($p->estatus?->nombre, ['Pendiente', 'En Proceso']))
         ->sum('cantidad');
 
-    // 4. RF-03: avance acumulado de la obra (fases completadas / catálogo x piezas)
+    // 4. Avance acumulado de la obra (fases completadas / catálogo x piezas)
     $totalFases      = Pieza::totalFasesEsperadas();
     $completadasObra = $obra->piezas->sum(
         fn($p) => $p->fases->filter(fn($f) => (bool) $f->estatusFase?->es_completada)->count()
@@ -135,11 +140,16 @@ public function show($id)
             'codigo_obra' => ['required', 'string', Rule::unique('obras', 'codigo_obra')->ignore($obra->id)],
             'nombre_obra' => 'required|string|max:255',
             'cliente' => 'required|string|max:255',
-            'cliente_usuario_id' => 'nullable|exists:usuarios,id',
+            // Solo una cuenta de cliente (rol 3) puede ver una obra en el portal.
+            'cliente_usuario_id' => [
+                'nullable',
+                Rule::exists('usuarios', 'id')->where('rol_id', 3),
+            ],
             'fecha_inicio' => 'required|date',
             'fecha_compromiso' => 'required|date|after_or_equal:fecha_inicio',
         ], [
             'codigo_obra.unique' => 'El código de obra ya existe.',
+            'cliente_usuario_id.exists' => 'La cuenta seleccionada no es un cliente con acceso al portal.',
             'fecha_compromiso.after_or_equal' => 'La fecha de compromiso no puede ser anterior al inicio.',
         ]);
 

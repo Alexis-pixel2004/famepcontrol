@@ -43,6 +43,13 @@ function successDe($resp)
     return (string) ($resp->getSession()?->get('success') ?? '');
 }
 
+// El arnés no avanza el ciclo de sesión entre peticiones: los mensajes flash
+// de una respuesta anterior siguen visibles. Se limpian antes de cada check.
+function limpiarSesion()
+{
+    session()->forget(['error', 'success']);
+}
+
 $produccion = User::where('rol_id', 1)->firstOrFail();
 $calidad    = User::where('rol_id', 2)->firstOrFail();
 
@@ -154,8 +161,27 @@ $pieza = Pieza::create([
     'peso_kg'            => 10,
     'cantidad'           => 1,
 ]);
+
+$enProceso  = \App\Models\CatEstatusFase::where('nombre', 'En Proceso')->value('id');
+$completada = \App\Models\CatEstatusFase::where('nombre', 'Completada')->value('id');
+
+// El nuevo orden exige Armado y Soldadura completadas antes de Pintura.
+// Se siembra el historial directamente (simula cierres ya aprobados) para
+// que esta suite siga probando la gestion de operarios, no el orden.
+$opSet1 = operarioDePrueba('OPF-SET1');
+foreach ([$faseArmado, $faseSoldadura] as $fasePrevia) {
+    FasePieza::create([
+        'pieza_id'           => $pieza->id,
+        'fase_id'            => $fasePrevia,
+        'operario_id'        => $opSet1->id,
+        'usuario_captura_id' => $produccion->id,
+        'estatus_fase_id'    => $completada,
+        'fecha_inicio'       => now()->subDay(),
+        'fecha_termino'      => now(),
+    ]);
+}
+
 // Se registra una fase con el monofase para darle historial real.
-$enProceso = \App\Models\CatEstatusFase::where('nombre', 'En Proceso')->value('id');
 (new FasePiezaController)->store(xpost([
     'fase_id'         => $fasePintura,
     'operario_id'     => $monofase->id,
@@ -168,30 +194,91 @@ check(Operario::where('id', $monofase->id)->exists(), 'el operario con historial
 
 echo "== Bloqueo real: asignar operario no habilitado a una fase ==\n";
 
+// La pieza OPF1 ya tiene Soldadura completada. Creamos OPF2 con el mismo
+// historial previo para probar la habilitacion sin chocar con esa fase.
+$piezaHabilitacion = Pieza::create([
+    'obra_id'            => $obra->id,
+    'tipo_estructura_id' => 1,
+    'estatus_id'         => 1,
+    'clave_marca_pieza'  => 'OPF2',
+    'peso_kg'            => 10,
+    'cantidad'           => 1,
+]);
+$opSet2 = operarioDePrueba('OPF-SET2');
+// Solo Armado: Soldadura debe estar libre para probar la habilitación.
+foreach ([$faseArmado] as $fasePrevia) {
+    FasePieza::create([
+        'pieza_id'           => $piezaHabilitacion->id,
+        'fase_id'            => $fasePrevia,
+        'operario_id'        => $opSet2->id,
+        'usuario_captura_id' => $produccion->id,
+        'estatus_fase_id'    => $completada,
+        'fecha_inicio'       => now()->subDay(),
+        'fecha_termino'      => now(),
+    ]);
+}
+
 // El monofase (Pintura + Armado) NO puede hacer Soldadura.
+limpiarSesion();
 $bloqueo = (new FasePiezaController)->store(xpost([
     'fase_id'         => $faseSoldadura,
     'operario_id'     => $monofase->id,
     'estatus_fase_id' => $enProceso,
-]), $pieza->id);
+]), $piezaHabilitacion->id);
 check(str_contains(errorDe($bloqueo), 'no está habilitado'), 'se bloquea asignar un operario no habilitado');
 
 // El multifase SI puede hacer Soldadura.
+limpiarSesion();
 $permitido = (new FasePiezaController)->store(xpost([
     'fase_id'         => $faseSoldadura,
     'operario_id'     => $multifase->id,
     'estatus_fase_id' => $enProceso,
-]), $pieza->id);
+]), $piezaHabilitacion->id);
 check(str_contains(successDe($permitido), 'registrado'), 'se permite asignar un operario habilitado');
-check(FasePieza::where('pieza_id', $pieza->id)->where('fase_id', $faseSoldadura)->where('operario_id', $multifase->id)->exists(), 'la fase quedo registrada con el operario correcto');
+check(FasePieza::where('pieza_id', $piezaHabilitacion->id)->where('fase_id', $faseSoldadura)->where('operario_id', $multifase->id)->exists(), 'la fase quedo registrada con el operario correcto');
 
 echo "== Validacion existente: no repetir operario en fase En Proceso ==\n";
+limpiarSesion();
 $repetir = (new FasePiezaController)->store(xpost([
     'fase_id'         => $faseSoldadura,
     'operario_id'     => $multifase->id,
     'estatus_fase_id' => $enProceso,
-]), $pieza->id);
+]), $piezaHabilitacion->id);
 check(str_contains(errorDe($repetir), 'ya está asignado'), 'se mantiene la regla de no repetir operario en proceso');
+
+echo "== A9: no desactivar un operario con tarea activa ==\n";
+$desactivar = (new OperarioController)->update(xpost([
+    'clave_empleado' => $monofase->clave_empleado,
+    'nombre'         => $monofase->nombre,
+    'apellido'       => $monofase->apellido,
+    'activo'         => 0,
+    'fases'          => [$faseArmado, $fasePintura],
+]), $monofase->id);
+check(str_contains(errorDe($desactivar), 'No se puede desactivar'), 'se bloquea desactivar con tarea activa');
+$monofase->refresh();
+check((bool) $monofase->activo, 'el operario sigue activo');
+
+echo "== A8: no quitar la habilitacion de una fase activa ==\n";
+$quitarFase = (new OperarioController)->update(xpost([
+    'clave_empleado' => $monofase->clave_empleado,
+    'nombre'         => $monofase->nombre,
+    'apellido'       => $monofase->apellido,
+    'activo'         => 1,
+    'fases'          => [$faseArmado],
+]), $monofase->id);
+check(str_contains(errorDe($quitarFase), 'No se puede quitar'), 'se bloquea quitar la fase que esta trabajando');
+$monofase->refresh();
+check($monofase->puedeHacerFase($fasePintura), 'la habilitacion de Pintura se conserva');
+
+echo "== A8/A9: editar sin tocar la tarea activa si se permite ==\n";
+$editarValido = (new OperarioController)->update(xpost([
+    'clave_empleado' => $monofase->clave_empleado,
+    'nombre'         => 'Lucia',
+    'apellido'       => 'Pintora',
+    'activo'         => 1,
+    'fases'          => [$faseArmado, $fasePintura],
+]), $monofase->id);
+check(str_contains(successDe($editarValido), 'actualizado'), 'editar conservando la fase activa si se permite');
 
 echo "== Permisos: solo Produccion gestiona operarios ==\n";
 Auth::loginUsingId($calidad->id);

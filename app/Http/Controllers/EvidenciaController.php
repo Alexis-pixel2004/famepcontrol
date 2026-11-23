@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\EvidenciaFotografica;
+use App\Models\FasePieza;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -13,6 +14,24 @@ class EvidenciaController extends Controller
         if (! auth()->user()->esCalidad()) {
             return redirect()->back()
                 ->with('error', 'Solo el Jefe de Calidad puede adjuntar evidencias.')
+                ->withInput();
+        }
+
+        // D9: la fase debe existir y seguir admitiendo cambios. Sin esto, un
+        // id inválido provocaba un 500 y una fase cerrada aceptaba fotos.
+        $fase = FasePieza::with('estatusFase')->find($fasePiezaId);
+
+        if ($fase === null) {
+            return redirect()->back()
+                ->with('error', 'La fase indicada no existe.')
+                ->withInput();
+        }
+
+        if ($fase->estaCerrada()) {
+            return redirect()->back()
+                ->with('error', 'No se pueden adjuntar evidencias: la fase está en estado "'
+                    . ($fase->estatusFase?->nombre ?? 'cerrada')
+                    . '" y ya no admite cambios.')
                 ->withInput();
         }
 

@@ -18,7 +18,7 @@ class DashboardController extends Controller
     $obrasFinalizadas = Obra::where('estatus', 'Finalizada')->count();
     $totalObras       = Obra::count();
 
-    // Métrica RF-03: fases completadas / (fases del catálogo x piezas)
+    // Métrica: fases completadas / (fases del catálogo x piezas)
     $totalFases = CatFase::count();
     $piezas     = Pieza::with(['obra', 'estatus', 'fases.estatusFase', 'fases.fase'])->get();
 

@@ -77,8 +77,13 @@ $pieza = Pieza::where('clave_marca_pieza', 'TS1')->firstOrFail();
 $enProcesoId  = CatEstatusFase::where('nombre', 'En Proceso')->value('id');
 $completadaId = CatEstatusFase::where('nombre', 'Completada')->value('id');
 
-function iniciar($piezaId, $faseId, $estatusId, $operarioId = 1)
+// Operario propio de la suite para no depender de los operarios reales.
+$operarioPrueba = operarioDePrueba('ES');
+$GLOBALS['operarioPruebaId'] = $operarioPrueba->id;
+
+function iniciar($piezaId, $faseId, $estatusId, $operarioId = null)
 {
+    $operarioId ??= $GLOBALS['operarioPruebaId'];
     Auth::loginUsingId(1);
     (new FasePiezaController)->store(Request::create('/x', 'POST', [
         'fase_id'         => $faseId,

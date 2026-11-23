@@ -116,6 +116,34 @@ try {
 }
 check($marcaDuplicada, 'update: marca duplicada en la misma obra rechazada');
 
+echo "== C3: el alta tambien rechaza marcas duplicadas ==\n";
+$duplicadaStore = false;
+try {
+    (new PiezaController)->store(xpost([
+        'clave_marca_pieza'  => 'PZ2',
+        'tipo_estructura_id' => 1,
+        'peso_kg'            => 50,
+        'cantidad'           => 1,
+    ]), $obra->id);
+} catch (\Illuminate\Validation\ValidationException $e) {
+    $duplicadaStore = array_key_exists('clave_marca_pieza', $e->errors());
+}
+check($duplicadaStore, 'store: marca duplicada en la misma obra rechazada');
+
+$duplicadaMinusculas = false;
+try {
+    (new PiezaController)->store(xpost([
+        'clave_marca_pieza'  => 'pz2',
+        'tipo_estructura_id' => 1,
+        'peso_kg'            => 50,
+        'cantidad'           => 1,
+    ]), $obra->id);
+} catch (\Illuminate\Validation\ValidationException $e) {
+    $duplicadaMinusculas = array_key_exists('clave_marca_pieza', $e->errors());
+}
+check($duplicadaMinusculas, 'store: la unicidad no depende de mayusculas');
+check(Pieza::where('obra_id', $obra->id)->where('clave_marca_pieza', 'PZ2')->count() === 1, 'store: no se creo una pieza duplicada');
+
 // Misma marca en OTRA obra: permitida
 (new PiezaController)->store(xpost([
     'clave_marca_pieza'  => 'PZ1X',

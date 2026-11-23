@@ -43,4 +43,12 @@ return [
         'timeout' => env('N8N_WEBHOOK_TIMEOUT', 15),
     ],
 
+    'evolution' => [
+        // Nombre de servicio dentro de famep-net: estable aunque cambie el puerto publicado.
+        'url'      => env('EVOLUTION_API_URL', 'http://evolution-api:8080'),
+        'api_key'  => env('AUTHENTICATION_API_KEY'),
+        'instance' => env('EVOLUTION_INSTANCE', 'famep-wa'),
+        'timeout'  => env('EVOLUTION_QR_TIMEOUT', 10),
+    ],
+
 ];

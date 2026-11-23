@@ -35,6 +35,26 @@ class Operario extends Model
             ->orderBy('orden_secuencia');
     }
 
+    // Estados de fase que mantienen al operario ocupado: mientras la fase
+    // esté en trabajo, en retrabajo o aprobada pero sin cierre de Producción,
+    // no se le puede asignar otra tarea.
+    public const ESTADOS_QUE_OCUPAN = ['En Proceso', 'En Reproceso', 'Aprobada por Calidad'];
+
+    /**
+     * Primera fase no terminal asignada al operario. Se puede excluir la
+     * fase que se está guardando para permitir retomar un reproceso con
+     * el mismo operario.
+     */
+    public function faseActiva(?int $excluirFasePiezaId = null): ?FasePieza
+    {
+        return $this->fases()
+            ->when($excluirFasePiezaId, fn ($q) => $q->where('id', '!=', $excluirFasePiezaId))
+            ->whereHas('estatusFase', fn ($q) => $q->whereIn('nombre', self::ESTADOS_QUE_OCUPAN))
+            ->with(['pieza.obra', 'fase', 'estatusFase'])
+            ->orderBy('id')
+            ->first();
+    }
+
     // ¿Puede este operario ejecutar la fase indicada? (por id)
     public function puedeHacerFase($faseId): bool
     {

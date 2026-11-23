@@ -89,10 +89,15 @@ $obra = Obra::where('codigo_obra', 'TEST-DC-001')->firstOrFail();
 $pieza = Pieza::where('clave_marca_pieza', 'DC1')->where('obra_id', $obra->id)->firstOrFail();
 
 $enProceso = CatEstatusFase::where('nombre', 'En Proceso')->value('id');
+
+// Operario propio: la base de desarrollo tiene operarios reales con tareas
+// activas y la guarda de reactivación no debe depender de ellos.
+$operarioDictamen = operarioDePrueba('DC');
+
 $fase = FasePieza::create([
     'pieza_id'           => $pieza->id,
     'fase_id'            => 1,
-    'operario_id'        => 1,
+    'operario_id'        => $operarioDictamen->id,
     'usuario_captura_id' => 1,
     'estatus_fase_id'    => $enProceso,
     'fecha_inicio'       => now(),
@@ -417,5 +422,122 @@ check(str_contains($respEditAbierta->render(), 'name="descripcion"'), 'el formul
 $faseRechazada->load(['observaciones.inspector', 'observaciones.editadoPor', 'observaciones.evidencias', 'fase', 'operario']);
 $htmlAbierta = View::make('piezas.partials.observaciones', ['hist' => $faseRechazada])->render();
 check(str_contains($htmlAbierta, route('calidad.edit', $dictRechazado->id)), 'la vista no cerrada SI muestra el enlace Editar');
+
+echo "== D9: evidencia valida la fase ==\n";
+
+Auth::loginUsingId(2); // Calidad
+
+// Fase inexistente: antes provocaba un 500 por clave foránea.
+$respFantasma = (new \App\Http\Controllers\EvidenciaController)->store(xpostConArchivo([], true), 999999);
+check(str_contains(errorDe($respFantasma), 'no existe'), 'evidencia: fase inexistente rechazada con mensaje');
+
+// La fase rechazada tiene bloquea_captura: no admite evidencias.
+$evidenciasAntes = EvidenciaFotografica::where('fase_pieza_id', $faseRechazada->id)->count();
+$respCerrada = (new \App\Http\Controllers\EvidenciaController)->store(xpostConArchivo([], true), $faseRechazada->id);
+check(str_contains(errorDe($respCerrada), 'ya no admite cambios'), 'evidencia: fase cerrada rechazada');
+check(
+    EvidenciaFotografica::where('fase_pieza_id', $faseRechazada->id)->count() === $evidenciasAntes,
+    'evidencia: no se guardo la foto en fase cerrada'
+);
+
+// Fase En Proceso: la evidencia si se guarda.
+$faseEvidencia = FasePieza::create([
+    'pieza_id'           => $pieza->id,
+    'fase_id'            => 2,
+    'operario_id'        => 1,
+    'usuario_captura_id' => 1,
+    'estatus_fase_id'    => $enProceso,
+    'fecha_inicio'       => now(),
+]);
+
+$respAbierta = (new \App\Http\Controllers\EvidenciaController)->store(xpostConArchivo([], true), $faseEvidencia->id);
+check(successDe($respAbierta) !== '', 'evidencia: fase abierta acepta la foto');
+check(EvidenciaFotografica::where('fase_pieza_id', $faseEvidencia->id)->exists(), 'evidencia: la foto quedo registrada');
+
+echo "== Fase 8: no reactivar una fase si el operario ya tiene otra tarea ==\n";
+
+$operarioReac = operarioDePrueba('DC-REAC');
+$piezaReac = Pieza::create([
+    'obra_id'            => $obra->id,
+    'tipo_estructura_id' => 1,
+    'estatus_id'         => 1,
+    'clave_marca_pieza'  => 'DCR1',
+    'peso_kg'            => 10,
+    'cantidad'           => 1,
+]);
+$piezaOcupada = Pieza::create([
+    'obra_id'            => $obra->id,
+    'tipo_estructura_id' => 1,
+    'estatus_id'         => 1,
+    'clave_marca_pieza'  => 'DCR2',
+    'peso_kg'            => 10,
+    'cantidad'           => 1,
+]);
+
+$faseReac = FasePieza::create([
+    'pieza_id'           => $piezaReac->id,
+    'fase_id'            => 1,
+    'operario_id'        => $operarioReac->id,
+    'usuario_captura_id' => 1,
+    'estatus_fase_id'    => $rechazada,
+    'fecha_inicio'       => now(),
+]);
+
+$dictReac = ObservacionCalidad::create([
+    'fase_pieza_id' => $faseReac->id,
+    'usuario_id'    => 2,
+    'descripcion'   => 'dictamen rechazado',
+    'resultado'     => 'Rechazado',
+]);
+
+// Segunda tarea activa del mismo operario (dato legado, creado directo).
+FasePieza::create([
+    'pieza_id'           => $piezaOcupada->id,
+    'fase_id'            => 1,
+    'operario_id'        => $operarioReac->id,
+    'usuario_captura_id' => 1,
+    'estatus_fase_id'    => $enProceso,
+    'fecha_inicio'       => now(),
+]);
+
+Auth::loginUsingId(2); // Calidad
+
+$respReac = (new ObservacionCalidadController)->update(xpost([
+    'descripcion' => 'intento de reproceso',
+    'resultado'   => 'Enviado a Reproceso',
+]), $dictReac->id);
+check(str_contains(errorDe($respReac), 'No se puede reactivar'), 'update: bloquea reactivar con el operario ocupado');
+$dictReac->refresh();
+$faseReac->refresh();
+check($dictReac->resultado === 'Rechazado', 'update bloqueado: el dictamen no cambia');
+check($faseReac->estatusFase?->nombre === 'Rechazada', 'update bloqueado: la fase sigue Rechazada');
+
+$respDelReac = (new ObservacionCalidadController)->destroy($dictReac->id);
+check(str_contains(errorDe($respDelReac), 'No se puede reactivar'), 'destroy: bloquea reactivar con el operario ocupado');
+check(ObservacionCalidad::whereKey($dictReac->id)->exists(), 'destroy bloqueado: el dictamen sigue existiendo');
+
+// Al liberar al operario, la misma edición si procede.
+FasePieza::where('pieza_id', $piezaOcupada->id)
+    ->where('fase_id', 1)
+    ->update(['estatus_fase_id' => $completada]);
+
+check(
+    (int) FasePieza::where('pieza_id', $piezaOcupada->id)->where('fase_id', 1)->value('estatus_fase_id') === (int) $completada,
+    'setup: la segunda tarea quedo Completada'
+);
+
+// El arnés no avanza el ciclo de vida de la sesión: se limpia el flash
+// anterior para verificar la respuesta real de esta petición.
+session()->forget(['error', 'success']);
+
+$respOkReac = (new ObservacionCalidadController)->update(xpost([
+    'descripcion' => 'reproceso valido',
+    'resultado'   => 'Enviado a Reproceso',
+]), $dictReac->id);
+check(errorDe($respOkReac) === '', 'update: permite reactivar al liberar al operario');
+$dictReac->refresh();
+$faseReac->refresh();
+check($dictReac->resultado === 'Enviado a Reproceso', 'update permitido: el dictamen cambia');
+check($faseReac->estatusFase?->nombre === 'En Reproceso', 'update permitido: la fase queda En Reproceso');
 
 echo "\nResultado: {$GLOBALS['ok']} OK, {$GLOBALS['fail']} FAIL\n";

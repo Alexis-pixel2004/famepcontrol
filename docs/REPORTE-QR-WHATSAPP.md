@@ -119,10 +119,12 @@ SERVER_URL: http://localhost:9091
 
 ## 7. Procedimiento correcto para regenerar el QR (solo si se desconecta)
 
+> Desde el 20-nov-2026 la API key ya no se fija en `docker-compose.yml`: se lee desde `.env.docker` (`AUTHENTICATION_API_KEY`). En los comandos siguientes se usa esa variable como placeholder; no pegue el valor real en la documentación.
+
 **Caso A — la instancia sigue existiendo pero está desconectada:**
 
 1. Abrir `http://localhost:9091/manager`.
-2. Entrar con la API key `famep_token_seguro_2026`.
+2. Entrar con la API key `$AUTHENTICATION_API_KEY`.
 3. Elegir la instancia `famep-wa` → **Connect / QR**.
 4. Escanear desde el celular: *WhatsApp → Ajustes → Dispositivos vinculados → Vincular un dispositivo*.
 5. El QR se renueva solo cada ~30 s; no guardar la imagen.
@@ -130,7 +132,7 @@ SERVER_URL: http://localhost:9091
 **Caso B — desde consola:**
 
 ```bash
-curl -H "apikey: famep_token_seguro_2026" \
+curl -H "apikey: $AUTHENTICATION_API_KEY" \
      http://localhost:9091/instance/connect/famep-wa
 ```
 
@@ -139,15 +141,15 @@ Devuelve `base64` del QR si está desconectada, o `{"state":"open"}` si ya está
 **Caso C — la instancia se perdió por completo (no es el caso actual):**
 
 ```bash
-curl -X DELETE -H "apikey: famep_token_seguro_2026" \
+curl -X DELETE -H "apikey: $AUTHENTICATION_API_KEY" \
      http://localhost:9091/instance/logout/famep-wa
 
-curl -X POST -H "apikey: famep_token_seguro_2026" \
+curl -X POST -H "apikey: $AUTHENTICATION_API_KEY" \
      -H "Content-Type: application/json" \
      -d '{"instanceName":"famep-wa","qrcode":true,"integration":"WHATSAPP-BAILEYS"}' \
      http://localhost:9091/instance/create
 
-curl -H "apikey: famep_token_seguro_2026" \
+curl -H "apikey: $AUTHENTICATION_API_KEY" \
      http://localhost:9091/instance/connect/famep-wa
 ```
 

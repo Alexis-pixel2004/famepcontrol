@@ -47,6 +47,9 @@ $calidad    = User::where('rol_id', 2)->firstOrFail();
 
 Auth::loginUsingId($produccion->id);
 
+// Operario propio de la suite para no depender de los operarios reales.
+$operario = operarioDePrueba('AUD');
+
 echo "== Rutas de auditoria ==\n";
 check(Route::has('reportes.auditoria'), 'ruta reportes.auditoria registrada');
 
@@ -124,7 +127,7 @@ check(LogAuditoria::where('tabla_afectada', 'piezas')->where('registro_id', $pie
 $enProceso = CatEstatusFase::where('nombre', 'En Proceso')->value('id');
 (new \App\Http\Controllers\FasePiezaController)->store(xpost([
     'fase_id'         => 1,
-    'operario_id'     => 1,
+    'operario_id'     => $operario->id,
     'estatus_fase_id' => $enProceso,
 ]), $pieza->id);
 

@@ -60,6 +60,11 @@ $pieza = Pieza::where('clave_marca_pieza', 'TF1')->firstOrFail();
 $enProceso  = CatEstatusFase::where('nombre', 'En Proceso')->value('id');
 $completada = CatEstatusFase::where('nombre', 'Completada')->value('id');
 
+// Operarios propios de la suite: la base de desarrollo tiene operarios reales
+// con fases activas, así que las pruebas no deben reutilizarlos.
+$operarioA = operarioDePrueba('FL-A');
+$operarioB = operarioDePrueba('FL-B');
+
 $fasePiezaId = fn ($faseId) => DB::table('fases_pieza')
     ->where('pieza_id', $pieza->id)
     ->where('fase_id', $faseId)
@@ -68,7 +73,7 @@ $fasePiezaId = fn ($faseId) => DB::table('fases_pieza')
 // Calidad intenta registrar avance => bloqueado
 Auth::loginUsingId(2);
 $r = (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 1, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza->id);
 check(str_contains(errorDe($r), 'Solo el Jefe de Producción'), 'calidad no puede registrar avance');
 
@@ -87,11 +92,11 @@ echo "== RF-06: no repetir operario en fase En Proceso ==\n";
 
 Auth::loginUsingId(1);
 (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 1, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza->id);
 
 $r = (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 1, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza->id);
 check(str_contains(errorDe($r), 'ya está asignado'), 'no repite el mismo operario en fase En Proceso');
 
@@ -107,7 +112,7 @@ echo "== RF-08: no se cierra sin dictamen Aprobado ==\n";
 
 Auth::loginUsingId(1);
 $r = (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $completada,
+    'fase_id' => 1, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $completada,
 ]), $pieza->id);
 check(str_contains(errorDe($r), 'Calidad aún no ha emitido'), 'cerrar sin Aprobado => bloqueado');
 
@@ -123,7 +128,7 @@ check($fila->fecha_dictamen !== null, 'fecha_dictamen registrada al aprobar');
 
 Auth::loginUsingId(1);
 (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $completada,
+    'fase_id' => 1, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $completada,
 ]), $pieza->id);
 
 $fila = DB::table('fases_pieza')->where('id', $fasePiezaId(1))->first();
@@ -139,7 +144,7 @@ echo "== RF-08: reproceso (Enviado a Reproceso) ==\n";
 
 Auth::loginUsingId(1);
 (new FasePiezaController)->store(xpost([
-    'fase_id' => 2, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 2, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza->id);
 
 Auth::loginUsingId(2);
@@ -157,7 +162,7 @@ echo "== RF-06: retomar reproceso con el mismo operario es valido ==\n";
 
 Auth::loginUsingId(1);
 $r = (new FasePiezaController)->store(xpost([
-    'fase_id' => 2, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 2, 'operario_id' => $operarioA->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza->id);
 
 $f2 = DB::table('fases_pieza')->where('id', $fasePiezaId(2))->first();
@@ -184,7 +189,7 @@ $fasePiezaId2 = fn ($faseId) => DB::table('fases_pieza')
 
 Auth::loginUsingId(1);
 (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 1, 'operario_id' => $operarioB->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza2->id);
 
 Auth::loginUsingId(2);
@@ -197,7 +202,7 @@ check($pieza2->estatus?->nombre === 'Detenida', 'Rechazado => pieza Detenida');
 
 Auth::loginUsingId(1);
 $r = (new FasePiezaController)->store(xpost([
-    'fase_id' => 1, 'operario_id' => 1, 'estatus_fase_id' => $enProceso,
+    'fase_id' => 1, 'operario_id' => $operarioB->id, 'estatus_fase_id' => $enProceso,
 ]), $pieza2->id);
 check(str_contains(errorDe($r), 'no se puede modificar'), 'fase Rechazada no se puede retomar');
 

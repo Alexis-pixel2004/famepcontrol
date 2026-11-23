@@ -111,18 +111,62 @@ class OperarioController extends Controller
             'fases.min'             => 'Debe habilitar al menos una fase para el operario.',
         ]);
 
-        DB::transaction(function () use ($operario, $validated) {
+        $error = DB::transaction(function () use ($operario, $validated) {
+            // Serializa con las asignaciones de fase que bloquean al operario.
+            $operario = Operario::whereKey($operario->id)->lockForUpdate()->firstOrFail();
+
+            $activas = $operario->fases()
+                ->whereHas('estatusFase', fn ($q) => $q->whereIn('nombre', Operario::ESTADOS_QUE_OCUPAN))
+                ->with(['fase', 'pieza.obra', 'estatusFase'])
+                ->get();
+
+            $activo = (bool) ($validated['activo'] ?? true);
+
+            // A9: no desactivar a un operario que todavía tiene una tarea abierta.
+            if (! $activo && $activas->isNotEmpty()) {
+                return 'No se puede desactivar a ' . trim($operario->nombre . ' ' . $operario->apellido)
+                    . ': tiene ' . $this->descripcionFaseActiva($activas->first())
+                    . '. Finalice esa tarea o reasígnela antes de desactivarlo.';
+            }
+
+            // A8: no quitar una habilitación que el operario está usando ahora.
+            $fases = array_map('intval', $validated['fases']);
+            $removidas = $activas->filter(
+                fn ($fase) => ! in_array((int) $fase->fase_id, $fases, true)
+            );
+
+            if ($removidas->isNotEmpty()) {
+                return 'No se puede quitar la habilitación de fase: el operario tiene '
+                    . $this->descripcionFaseActiva($removidas->first())
+                    . '. Finalice esa tarea o reasígnela antes de cambiar sus fases.';
+            }
+
             $operario->update([
                 'clave_empleado' => $validated['clave_empleado'],
                 'nombre'         => $validated['nombre'],
                 'apellido'       => $validated['apellido'],
-                'activo'         => (bool) ($validated['activo'] ?? true),
+                'activo'         => $activo,
             ]);
 
             $operario->fasesHabilitadas()->sync($validated['fases']);
+
+            return null;
         });
 
+        if ($error !== null) {
+            return redirect()->route('operarios.index')->with('error', $error)->withInput();
+        }
+
         return redirect()->route('operarios.index')->with('success', 'Operario actualizado correctamente.');
+    }
+
+    // Describe la tarea abierta que impide desactivar o deshabilitar al operario.
+    private function descripcionFaseActiva(\App\Models\FasePieza $fase): string
+    {
+        return 'la fase "' . ($fase->fase?->nombre ?? 'otra fase')
+            . '" de la marca ' . ($fase->pieza?->clave_marca_pieza ?? 'sin marca')
+            . ' (' . ($fase->pieza?->obra?->codigo_obra ?? 'sin obra') . '), que sigue en "'
+            . ($fase->estatusFase?->nombre ?? 'proceso') . '"';
     }
 
     // Eliminar operario: solo si no tiene fases registradas (historial).

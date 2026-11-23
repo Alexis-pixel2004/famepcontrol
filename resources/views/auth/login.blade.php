@@ -9,6 +9,12 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
     <main class="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
         <div class="text-center mb-6">
+            <img src="{{ asset('images/logo-famep.png') }}"
+                 alt="Logo de FAMEP"
+                 width="1920"
+                 height="720"
+                 decoding="async"
+                 class="mx-auto mb-4 h-auto w-48 sm:w-56">
             <h1 class="text-2xl font-bold text-gray-800">FAMEP</h1>
             <p class="text-sm text-gray-500">Sistema de Control de Producción y Calidad</p>
         </div>

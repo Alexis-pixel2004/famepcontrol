@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FasePiezaController;
 use App\Http\Controllers\ObraController;
@@ -18,6 +19,24 @@ function check($cond, $msg)
         echo "  [FAIL] $msg\n";
     }
 }
+
+function checkBotonHistorial(string $html, string $prefijo): void
+{
+    check(
+        substr_count($html, 'aria-label="Actualizar historial de procesos e inspecciones"') === 1,
+        "$prefijo: botón de actualizar historial presente una sola vez"
+    );
+    check(str_contains($html, 'Actualizar historial</span>'), "$prefijo: texto visible del botón");
+    check(str_contains($html, 'window.location.reload()'), "$prefijo: botón recarga la página");
+    check(str_contains($html, ':disabled="actualizando"'), "$prefijo: botón se deshabilita mientras actualiza");
+}
+
+echo "== Render vista: Login ==\n";
+$h = (new AuthController)->showLogin()->render();
+check(str_contains($h, asset('images/logo-famep.png')), 'auth.login: imagen local del logo');
+check(str_contains($h, 'alt="Logo de FAMEP"'), 'auth.login: alt del logo');
+check(str_contains($h, 'width="1920"') && str_contains($h, 'height="720"'), 'auth.login: dimensiones declaradas');
+check(is_file(public_path('images/logo-famep.png')), 'auth.login: archivo de imagen existe');
 
 echo "== Render vistas: Jefe de Produccion ==\n";
 Auth::loginUsingId(1);
@@ -48,23 +67,28 @@ $h = (new FasePiezaController)->show(1)->render();
 check(str_contains($h, 'Marca: TB1'), 'piezas.show TB1: titulo de marca');
 check(str_contains($h, '+ Registrar Avance en Taller'), 'piezas.show TB1: produccion ve formulario de avance');
 check(str_contains($h, 'Fases Finalizadas'), 'piezas.show TB1: columna de fases finalizadas');
+check(str_contains($h, 'data-operario-id="1"'), 'piezas.show TB1: el formulario expone el operario asignado');
+checkBotonHistorial($h, 'produccion');
 
-$h = (new FasePiezaController)->show(2)->render();
-check(str_contains($h, 'Marca: TB2'), 'piezas.show TB2: titulo de marca');
-check(str_contains($h, 'Fases Activas / En Evaluacion'), 'piezas.show TB2: fases activas');
+$jsFases = file_get_contents(public_path('js/fases-evaluacion.js'));
+check(str_contains($jsFases, 'selectOperario.value = operarioActualId'), 'JS preselecciona el operario asignado');
+
+// La semilla real solo dejo la pieza TB1 (id 1), con Pintura en reproceso.
+// Antes habia una TB2 de prueba que ya no existe: se reancla a la pieza real.
+$h = (new FasePiezaController)->show(1)->render();
+check(str_contains($h, 'Marca: TB1'), 'piezas.show TB1: titulo de marca');
+check(str_contains($h, 'Fases Activas / En Evaluacion'), 'piezas.show TB1: fases activas (Pintura en reproceso)');
 
 echo "== Render vistas: Jefe de Calidad ==\n";
 Auth::loginUsingId(2);
 
-$h = (new FasePiezaController)->show(2)->render();
-check(str_contains($h, 'Marca: TB2'), 'calidad: piezas.show TB2 accesible');
+$h = (new FasePiezaController)->show(1)->render();
+check(str_contains($h, 'Marca: TB1'), 'calidad: piezas.show TB1 accesible');
 check(str_contains($h, 'Evaluar Calidad de la Fase'), 'calidad: formula de dictamen presente (Pintura en reproceso)');
 check(str_contains($h, 'Dictaminar'), 'calidad: boton Dictaminar presente');
 check(! str_contains($h, '+ Registrar Avance en Taller'), 'calidad: NO ve el formulario de avance (gate produccion)');
-
-$h = (new FasePiezaController)->show(1)->render();
-check(str_contains($h, 'Marca: TB1'), 'calidad: piezas.show TB1 (terminada) accesible');
-check(str_contains($h, 'Cerrada por Producción. No admite'), 'calidad: fase terminada en solo lectura');
+check(str_contains($h, 'Cerrada por Producción. No admite'), 'calidad: fases cerradas en solo lectura');
+checkBotonHistorial($h, 'calidad');
 
 echo "\nResultado: {$GLOBALS['ok']} OK, {$GLOBALS['fail']} FAIL\n";
 

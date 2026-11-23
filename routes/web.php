@@ -12,6 +12,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\OperarioController;
+use App\Http\Controllers\WhatsAppController;
 
 // Redirigir la raíz al login
 Route::get('/', function () {
@@ -60,6 +61,9 @@ Route::middleware('auth')->group(function () {
         // Seguimiento de Fases
         Route::get('/piezas/{piezaId}', [FasePiezaController::class, 'show'])->name('piezas.show');
         Route::post('/piezas/{piezaId}/fases', [FasePiezaController::class, 'store'])->name('fases.store');
+        Route::get('/fases/{fasePiezaId}/editar', [FasePiezaController::class, 'edit'])->name('fases.edit');
+        Route::put('/fases/{fasePiezaId}', [FasePiezaController::class, 'update'])->name('fases.update');
+        Route::delete('/fases/{fasePiezaId}', [FasePiezaController::class, 'destroy'])->name('fases.destroy');
 
         // Control de Calidad y Evidencias
         Route::post('/fases/{fasePiezaId}/calidad', [ObservacionCalidadController::class, 'store'])->name('calidad.store');
@@ -75,6 +79,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/clientes', [ClienteController::class, 'index'])->name('clientes.index');
         Route::get('/clientes/crear', [ClienteController::class, 'create'])->name('clientes.create');
         Route::post('/clientes', [ClienteController::class, 'store'])->name('clientes.store');
+        Route::get('/clientes/{id}/editar', [ClienteController::class, 'edit'])->name('clientes.edit');
+        Route::put('/clientes/{id}', [ClienteController::class, 'update'])->name('clientes.update');
+        Route::delete('/clientes/{id}', [ClienteController::class, 'destroy'])->name('clientes.destroy');
 
         // Reportes (Producción y Calidad)
         Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
@@ -92,5 +99,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/operarios/{id}/editar', [OperarioController::class, 'edit'])->name('operarios.edit');
         Route::put('/operarios/{id}', [OperarioController::class, 'update'])->name('operarios.update');
         Route::delete('/operarios/{id}', [OperarioController::class, 'destroy'])->name('operarios.destroy');
+
+        // Vinculación de WhatsApp: solo Jefe de Calidad (el controller revalida el rol)
+        Route::get('/whatsapp/qr', [WhatsAppController::class, 'index'])->name('whatsapp.qr');
+        Route::get('/whatsapp/qr/estado', [WhatsAppController::class, 'estado'])->name('whatsapp.qr.estado');
     });
 });

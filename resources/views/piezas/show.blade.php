@@ -157,7 +157,19 @@
 
         <!-- Historial de Procesos e Inspección de Calidad (LAYOUT EN GRID 2 COLUMNAS) -->
         <div class="space-y-4">
-            <h2 class="text-lg font-bold text-gray-800 border-b pb-2">Historial de Procesos e Inspecciones</h2>
+            <div x-data="{ actualizando: false }" class="flex flex-wrap items-center justify-between gap-3 border-b pb-2">
+                <h2 class="text-lg font-bold text-gray-800">Historial de Procesos e Inspecciones</h2>
+
+                <button type="button"
+                        @click="actualizando = true; window.location.reload()"
+                        :disabled="actualizando"
+                        :aria-busy="actualizando ? 'true' : 'false'"
+                        aria-label="Actualizar historial de procesos e inspecciones"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+                    <span aria-hidden="true" class="text-base leading-none">↻</span>
+                    <span x-text="actualizando ? 'Actualizando…' : 'Actualizar historial'">Actualizar historial</span>
+                </button>
+            </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -184,6 +196,24 @@
                                     {{ $hist->estatusFase?->nombre }}
                                 </span>
                             </div>
+
+                            @if(auth()->user()->esProduccion() && ! $hist->terminada() && ! $hist->estaCerrada())
+                                <div class="pt-2 flex flex-wrap items-center gap-2 border-t border-gray-100">
+                                    <a href="{{ route('fases.edit', $hist->id) }}"
+                                       class="text-[11px] font-semibold text-blue-700 hover:text-blue-900 px-2 py-1 rounded border border-blue-200 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">
+                                        Editar asignación
+                                    </a>
+                                    <form action="{{ route('fases.destroy', $hist->id) }}" method="POST"
+                                          onsubmit="return confirm('¿Eliminar la asignación de {{ $hist->fase->nombre }}? Esta acción no se puede deshacer.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="text-[11px] font-semibold text-red-700 hover:text-red-900 px-2 py-1 rounded border border-red-200 hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500">
+                                            Eliminar asignación
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
 
                             <!-- Formulario de Inspección (Solo mientras la fase admita dictamen) -->
                             @if(auth()->user()->esCalidad() && $hist->admiteDictamen())

@@ -13,11 +13,23 @@ class PiezaController extends Controller
 {
     public function store(Request $request, $obraId)
     {
+        // La marca se guarda en mayúsculas; se normaliza antes de validar para
+        // que la unicidad por obra no dependa de cómo la escriba el usuario.
+        $request->merge([
+            'clave_marca_pieza' => strtoupper(trim((string) $request->input('clave_marca_pieza'))),
+        ]);
+
         $validated = $request->validate([
-            'clave_marca_pieza' => 'required|string|max:50',
+            'clave_marca_pieza' => [
+                'required', 'string', 'max:50',
+                Rule::unique('piezas', 'clave_marca_pieza')
+                    ->where(fn ($q) => $q->where('obra_id', $obraId)),
+            ],
             'tipo_estructura_id' => 'required|exists:cat_tipos_estructura,id',
             'peso_kg' => 'required|numeric|min:0',
             'cantidad' => 'required|integer|min:1',
+        ], [
+            'clave_marca_pieza.unique' => 'Ya existe una pieza con esa marca en esta obra.',
         ]);
 
         $estatusPendiente = CatEstatusPieza::where('nombre', 'Pendiente')->first();
@@ -26,7 +38,7 @@ class PiezaController extends Controller
             'obra_id' => $obraId,
             'tipo_estructura_id' => $validated['tipo_estructura_id'],
             'estatus_id' => $estatusPendiente->id ?? 1,
-            'clave_marca_pieza' => strtoupper($validated['clave_marca_pieza']),
+            'clave_marca_pieza' => $validated['clave_marca_pieza'],
             'peso_kg' => $validated['peso_kg'],
             'cantidad' => $validated['cantidad'],
         ]);

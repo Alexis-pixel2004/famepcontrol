@@ -40,10 +40,11 @@ services:
 
   db:
     image: postgres:18-alpine
+    env_file:
+      - .env.docker
     environment:
       POSTGRES_DB: famep_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
     volumes:
       - pgdata:/var/lib/postgresql
       - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
@@ -93,9 +94,10 @@ services:
     restart: always
     ports:
       - "9091:8080"
+    env_file:
+      - .env.docker
     environment:
       SERVER_URL: http://localhost:9091
-      AUTHENTICATION_API_KEY: famep_token_seguro_2026
       AUTHENTICATION_TYPE: apikey
       TZ: America/Mexico_City
     volumes:

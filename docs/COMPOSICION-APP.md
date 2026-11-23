@@ -328,6 +328,7 @@ Evolution API  →  WhatsApp
 - El **QR no depende del puerto**: es un token temporal de vinculación de WhatsApp. El puerto solo define la URL donde se solicita.
 - La sesión se guarda en el volumen `famep_evolution_instances` (`/evolution/instances`), por lo que **sobrevive a recrear los contenedores**; no hay que revincular al cambiar puertos.
 - Para vincular o revincular, abrir `http://localhost:9091/manager` y elegir la instancia `famep-wa`, o consultar `GET /instance/connect/famep-wa` con la API key. Si la instancia ya está conectada, el endpoint responde `{"state":"open"}` y no muestra QR.
+- **Desde el 20-nov-2026 también existe `/whatsapp/qr` en el panel**, exclusivo para el Jefe de Calidad. La página consulta Evolution desde el servidor cada 30 s y muestra el QR como data URI; la API key nunca llega al navegador. Las rutas son `whatsapp.qr` y `whatsapp.qr.estado`.
 - No guardar el QR como archivo: se renueva cada ~30 s y deja de ser válido. El antiguo `qr.html` de la raíz fue eliminado el 28-oct-2026 por estar expirado y fuera de `public/`.
 - Estado esperado: `famep-wa` con `connectionStatus: open` y dueño `5217731169349@s.whatsapp.net`.
 
@@ -347,7 +348,7 @@ Evolution API  →  WhatsApp
 | Auditoría | Registro de escrituras con valores previos/nuevos; nunca contraseñas |
 | Archivos ocultos | Nginx los deniega |
 
-> Los secretos (APP_KEY, credenciales de BD, API key de Evolution) están en `.env.docker` y **no se reproducen en este documento**.
+> Los secretos (APP_KEY, credenciales de BD, API key de Evolution) están en `.env.docker` y **no se reproducen en este documento**. `docker-compose.yml` usa `env_file: .env.docker` en los servicios `app`, `db` y `evolution-api`; la plantilla sin valores reales es `.env.docker.example`. El traslado conservó los valores originales: PostgreSQL solo aplica `POSTGRES_PASSWORD` al inicializar `pgdata`, así que cualquier rotación requiere un procedimiento aparte.
 
 ---
 

@@ -6,6 +6,7 @@ use App\Models\ObservacionCalidad;
 use App\Models\EvidenciaFotografica;
 use App\Models\FasePieza;
 use App\Models\CatEstatusFase;
+use App\Models\Operario;
 use App\Jobs\SendWhatsAppAlertJob;
 use App\Support\FechaLocal;
 use Illuminate\Http\Request;
@@ -161,6 +162,20 @@ class ObservacionCalidadController extends Controller
                 return 'La fase ya fue cerrada por Producción: sus dictámenes son de solo lectura.';
             }
 
+            // Si este es el último dictamen, su nuevo resultado definirá el
+            // estado de la fase. No se permite reactivarla si el operario ya
+            // está ocupado en otra tarea.
+            $ultimoId = $fasePieza->observaciones()->reorder('id', 'desc')->value('id');
+            $estadoResultante = (int) $ultimoId === (int) $dictamen->id
+                ? FasePieza::estadoParaResultado($validated['resultado'])
+                : ($fasePieza->estatusFase?->nombre ?? 'En Proceso');
+
+            $errorOperario = $this->validarReactivacion($fasePieza, $estadoResultante);
+
+            if ($errorOperario !== null) {
+                return $errorOperario;
+            }
+
             // Se marca "editado" solo si el contenido realmente cambió
             // (descripcion, resultado o gestión de fotos), para que la
             // auditoría refleje modificaciones reales y no un envío vacío.
@@ -251,6 +266,22 @@ class ObservacionCalidadController extends Controller
                 return 'La fase ya fue cerrada por Producción: sus dictámenes son de solo lectura.';
             }
 
+            // Al borrar el último dictamen la fase puede volver a un estado
+            // activo; se valida que el operario no tenga otra tarea abierta.
+            $siguienteResultado = ObservacionCalidad::where('fase_pieza_id', $fasePiezaId)
+                ->where('id', '!=', $dictamen->id)
+                ->orderByDesc('id')
+                ->value('resultado');
+
+            $errorOperario = $this->validarReactivacion(
+                $fasePieza,
+                FasePieza::estadoParaResultado($siguienteResultado)
+            );
+
+            if ($errorOperario !== null) {
+                return $errorOperario;
+            }
+
             // Borra los archivos físicos de las evidencias ligadas al dictamen
             // (el cascade de la BD solo borra los registros, no los archivos).
             foreach ($dictamen->evidencias as $evidencia) {
@@ -281,6 +312,43 @@ class ObservacionCalidadController extends Controller
         // de la eliminación queda en la auditoría.
         return redirect()->route('piezas.show', $piezaId)
             ->with('success', 'Dictamen eliminado.');
+    }
+
+    /**
+     * Impide que una edición o eliminación de dictamen devuelva la fase a un
+     * estado que ocupa al operario cuando ya tiene otra tarea activa.
+     * Solo aplica cuando la fase pasa de un estado terminal a uno activo.
+     */
+    private function validarReactivacion(FasePieza $fasePieza, string $estadoResultante): ?string
+    {
+        $estadoActual = $fasePieza->estatusFase?->nombre;
+
+        if (in_array($estadoActual, Operario::ESTADOS_QUE_OCUPAN, true)) {
+            return null;
+        }
+
+        if (! in_array($estadoResultante, Operario::ESTADOS_QUE_OCUPAN, true)) {
+            return null;
+        }
+
+        if ($fasePieza->operario_id === null) {
+            return null;
+        }
+
+        $operario = Operario::whereKey($fasePieza->operario_id)->lockForUpdate()->first();
+        $conflicto = $operario?->faseActiva($fasePieza->id);
+
+        if ($conflicto === null) {
+            return null;
+        }
+
+        return 'No se puede reactivar esta fase: el operario '
+            . trim(($operario->nombre ?? '') . ' ' . ($operario->apellido ?? ''))
+            . ' ya está asignado a la fase "' . ($conflicto->fase?->nombre ?? 'otra fase')
+            . '" de la marca ' . ($conflicto->pieza?->clave_marca_pieza ?? 'sin marca')
+            . ' (' . ($conflicto->pieza?->obra?->codigo_obra ?? 'sin obra') . '), que sigue en "'
+            . ($conflicto->estatusFase?->nombre ?? 'proceso')
+            . '". Finalice esa tarea o reasígnela antes de reactivar esta fase.';
     }
 
     /**
