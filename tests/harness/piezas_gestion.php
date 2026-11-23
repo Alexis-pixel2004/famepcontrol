@@ -9,6 +9,9 @@ use App\Models\Pieza;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 $GLOBALS['ok']   = 0;
 $GLOBALS['fail'] = 0;
@@ -66,6 +69,26 @@ $obra = Obra::where('codigo_obra', 'TEST-PZ-001')->firstOrFail();
     'fecha_compromiso' => '2026-12-31',
 ]));
 $obra2 = Obra::where('codigo_obra', 'TEST-PZ-002')->firstOrFail();
+
+echo "== RN-25: cantidad fija en 1 al agregar pieza ==\n";
+$htmlObra = (new ObraController)->show($obra->id)->render();
+check(str_contains($htmlObra, '<input type="hidden" name="cantidad" value="1">'), 'alta: cantidad fija enviada en el formulario');
+check(! str_contains($htmlObra, 'type="number" name="cantidad"'), 'alta: cantidad NO editable en el formulario');
+
+(new PiezaController)->store(xpost([
+    'clave_marca_pieza'  => 'PZCANT1',
+    'tipo_estructura_id' => 1,
+    'peso_kg'            => 10,
+    'cantidad'           => 99,
+]), $obra->id);
+check((int) Pieza::where('clave_marca_pieza', 'PZCANT1')->where('obra_id', $obra->id)->value('cantidad') === 1, 'store: ignora cantidad 99 y guarda 1');
+
+(new PiezaController)->store(xpost([
+    'clave_marca_pieza'  => 'PZCANT2',
+    'tipo_estructura_id' => 1,
+    'peso_kg'            => 10,
+]), $obra->id);
+check((int) Pieza::where('clave_marca_pieza', 'PZCANT2')->where('obra_id', $obra->id)->value('cantidad') === 1, 'store: guarda 1 aunque no venga cantidad');
 
 echo "== Editar pieza SIN avance (todo editable) ==\n";
 (new PiezaController)->store(xpost([
@@ -143,6 +166,32 @@ try {
 }
 check($duplicadaMinusculas, 'store: la unicidad no depende de mayusculas');
 check(Pieza::where('obra_id', $obra->id)->where('clave_marca_pieza', 'PZ2')->count() === 1, 'store: no se creo una pieza duplicada');
+
+echo "== RN-27: el error de marca duplicada se ve en pantalla ==\n";
+$errores = (new ViewErrorBag)->put('default', new MessageBag([
+    'clave_marca_pieza' => ['Ya existe una pieza con esa marca en esta obra.'],
+]));
+View::share('errors', $errores);
+app('request')->setLaravelSession(session()->driver());
+session()->flashInput(['clave_marca_pieza' => 'PZ2']);
+
+$htmlObraConError = (new ObraController)->show($obra->id)->render();
+check(str_contains($htmlObraConError, 'Ya existe una pieza con esa marca en esta obra.'), 'detalle de obra muestra el mensaje de marca duplicada');
+check(str_contains($htmlObraConError, 'id="errores-pieza"'), 'bloque de errores con id para accesibilidad');
+check(str_contains($htmlObraConError, 'role="alert"'), 'bloque de errores anunciado como alerta');
+check(str_contains($htmlObraConError, 'aria-invalid="true"'), 'campo de marca marcado como invalido');
+check(str_contains($htmlObraConError, 'aria-describedby="errores-pieza"'), 'campo de marca describe el error');
+check(str_contains($htmlObraConError, 'value="PZ2"'), 'campo de marca conserva el valor escrito');
+check(! str_contains($htmlObraConError, 'confirm('), 'obras.show: sin confirm nativo del navegador');
+check(str_contains($htmlObraConError, 'id="form-eliminar-pieza-'), 'obras.show: modal propio para eliminar pieza');
+
+View::share('errors', new ViewErrorBag());
+session()->forget('_old_input');
+
+session()->flash('error', 'Solo se pueden eliminar piezas sin fases registradas.');
+$htmlObraBloqueada = (new ObraController)->show($obra->id)->render();
+check(str_contains($htmlObraBloqueada, 'Solo se pueden eliminar piezas sin fases registradas.'), 'detalle de obra muestra los bloqueos del servidor');
+session()->forget('error');
 
 // Misma marca en OTRA obra: permitida
 (new PiezaController)->store(xpost([

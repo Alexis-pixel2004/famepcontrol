@@ -7,7 +7,14 @@
     <script src="{{ asset('vendor/tailwind/tailwind.js') }}"></script>
     <script defer src="{{ asset('vendor/alpine/alpine.min.js') }}"></script>
 </head>
-<body x-data class="bg-gray-100 min-h-screen p-4 flex items-center justify-center">
+<body x-data="{
+    inicio: '{{ old('fecha_inicio') }}',
+    get minCompromiso() {
+        if (! this.inicio || this.inicio.length !== 10) return '';
+        const [anio, mes, dia] = this.inicio.split('-').map(Number);
+        return new Date(Date.UTC(anio, mes - 1, dia + 1)).toISOString().slice(0, 10);
+    }
+}" class="bg-gray-100 min-h-screen p-4 flex items-center justify-center">
     <x-sidebar-menu />
     <button type="button"
             @click="$store.layout.toggle()"
@@ -65,11 +72,12 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label for="fecha_inicio" class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
-                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ old('fecha_inicio') }}" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ old('fecha_inicio') }}" x-model="inicio" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
                 </div>
                 <div>
                     <label for="fecha_compromiso" class="block text-sm font-medium text-gray-700">Fecha Compromiso</label>
-                    <input type="date" id="fecha_compromiso" name="fecha_compromiso" value="{{ old('fecha_compromiso') }}" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
+                    <input type="date" id="fecha_compromiso" name="fecha_compromiso" value="{{ old('fecha_compromiso') }}" aria-describedby="ayuda_compromiso" :min="minCompromiso" required class="w-full mt-1 p-2 border rounded-lg focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none">
+                    <p id="ayuda_compromiso" class="mt-1 text-xs text-gray-500">Debe ser posterior a la fecha de inicio.</p>
                 </div>
             </div>
 

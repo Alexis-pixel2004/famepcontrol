@@ -110,6 +110,50 @@ check($fechaInvalidaRechazada, 'update: fecha compromiso anterior rechazada');
 $obra->refresh();
 check($obra->fecha_inicio->format('Y-m-d') === '2026-10-05', 'update: no se persistio un cambio invalido');
 
+echo "== Validacion: compromiso debe ser posterior al inicio ==\n";
+$mismaFechaAltaRechazada = false;
+try {
+    (new ObraController)->store(xpost([
+        'codigo_obra'      => 'TEST-FECHA-001',
+        'nombre_obra'      => 'Obra Misma Fecha Alta',
+        'cliente'          => 'Cliente Fecha',
+        'fecha_inicio'     => '2026-11-20',
+        'fecha_compromiso' => '2026-11-20',
+    ]));
+} catch (\Illuminate\Validation\ValidationException $e) {
+    $mismaFechaAltaRechazada = array_key_exists('fecha_compromiso', $e->errors())
+        && str_contains((string) ($e->errors()['fecha_compromiso'][0] ?? ''), 'posterior');
+}
+check($mismaFechaAltaRechazada, 'store: fecha compromiso igual al inicio rechazada');
+check(Obra::where('codigo_obra', 'TEST-FECHA-001')->doesntExist(), 'store: obra con fecha igual no se persistio');
+
+$mismaFechaEdicionRechazada = false;
+try {
+    (new ObraController)->update(xpost([
+        'codigo_obra'      => 'TEST-EDIT-001',
+        'nombre_obra'      => 'Obra Editada',
+        'cliente'          => 'Cliente Y',
+        'fecha_inicio'     => '2026-10-05',
+        'fecha_compromiso' => '2026-10-05',
+    ]), $obra->id);
+} catch (\Illuminate\Validation\ValidationException $e) {
+    $mismaFechaEdicionRechazada = array_key_exists('fecha_compromiso', $e->errors());
+}
+check($mismaFechaEdicionRechazada, 'update: fecha compromiso igual al inicio rechazada');
+
+$obra->refresh();
+check($obra->fecha_compromiso->format('Y-m-d') === '2026-12-15', 'update: no se persistio la fecha igual');
+
+(new ObraController)->update(xpost([
+    'codigo_obra'      => 'TEST-EDIT-001',
+    'nombre_obra'      => 'Obra Editada',
+    'cliente'          => 'Cliente Y',
+    'fecha_inicio'     => '2026-10-05',
+    'fecha_compromiso' => '2026-10-06',
+]), $obra->id);
+$obra->refresh();
+check($obra->fecha_compromiso->format('Y-m-d') === '2026-10-06', 'update: fecha compromiso posterior aceptada');
+
 echo "== Permisos (solo Produccion) ==\n";
 $obraPendiente = (new ObraController)->store(xpost([
     'codigo_obra'      => 'TEST-PERM-001',
@@ -119,6 +163,21 @@ $obraPendiente = (new ObraController)->store(xpost([
     'fecha_compromiso' => '2026-12-31',
 ]));
 $obraPerm = Obra::where('codigo_obra', 'TEST-PERM-001')->firstOrFail();
+
+echo "== RN-28: confirmacion propia para eliminar obra ==\n";
+$htmlIndex = (new ObraController)->index()->render();
+check(! str_contains($htmlIndex, "confirm('¿Eliminar la obra"), 'obras.index: sin confirm nativo del navegador');
+check(str_contains($htmlIndex, 'id="form-eliminar-obra-' . $obraPerm->id . '"'), 'obras.index: formulario identificable para el modal');
+check(str_contains($htmlIndex, 'Eliminar obra ' . $obraPerm->codigo_obra), 'obras.index: titulo del modal con la obra');
+check(str_contains($htmlIndex, 'role="dialog"'), 'obras.index: modal propio de confirmacion');
+check(str_contains($htmlIndex, 'aria-modal="true"'), 'obras.index: modal anuncia ser modal');
+check(str_contains($htmlIndex, 'aria-haspopup="dialog"'), 'obras.index: boton anuncia el dialogo');
+check(str_contains($htmlIndex, 'Cancelar'), 'obras.index: boton Cancelar');
+check(str_contains($htmlIndex, 'Sí, eliminar'), 'obras.index: boton de confirmacion');
+check(
+    str_contains($htmlIndex, "document.getElementById('form-eliminar-obra-" . $obraPerm->id . "').submit()"),
+    'obras.index: confirmar envia el formulario DELETE'
+);
 
 Auth::loginUsingId(2); // Calidad
 $resp = (new ObraController)->edit($obraPerm->id);

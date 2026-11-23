@@ -89,13 +89,13 @@
                                         <a href="{{ route('clientes.edit', $cliente->id) }}" class="text-blue-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded" aria-label="Editar cliente {{ $cliente->nombre }}">
                                             Editar
                                         </a>
-                                        <form action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este cliente? Esta acción no se puede deshacer.');">
+                                        <form id="form-eliminar-cliente-{{ $cliente->id }}" action="{{ route('clientes.destroy', $cliente->id) }}" method="POST" class="hidden">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" aria-label="Eliminar cliente {{ $cliente->nombre }}" class="text-red-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded">
-                                                Eliminar
-                                            </button>
                                         </form>
+                                        <x-confirmar-eliminacion
+                                            :form-id="'form-eliminar-cliente-' . $cliente->id"
+                                            :titulo="'Eliminar cliente ' . $cliente->nombre" />
                                     </div>
                                 </td>
                             </tr>

@@ -88,13 +88,13 @@
                                     Editar
                                 </a>
                                 @if($op->fases_count === 0)
-                                    <form action="{{ route('operarios.destroy', $op->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar al operario {{ $op->nombre }} {{ $op->apellido }}? Esta acción no se puede deshacer.');">
+                                    <form id="form-eliminar-operario-{{ $op->id }}" action="{{ route('operarios.destroy', $op->id) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" aria-label="Eliminar operario {{ $op->nombre }} {{ $op->apellido }}" class="text-red-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
-                                            Eliminar
-                                        </button>
                                     </form>
+                                    <x-confirmar-eliminacion
+                                        :form-id="'form-eliminar-operario-' . $op->id"
+                                        :titulo="'Eliminar operario ' . $op->nombre . ' ' . $op->apellido" />
                                 @endif
                             @endif
                         </div>

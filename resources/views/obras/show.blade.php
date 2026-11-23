@@ -84,6 +84,25 @@
             </p>
         </div>
 
+        <!-- RN-27: errores de validación y bloqueos visibles -->
+        @if ($errors->any())
+            <div id="errores-pieza" role="alert" aria-live="assertive"
+                 class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+                <p class="font-semibold mb-1">No se pudo guardar:</p>
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div role="alert" aria-live="assertive" class="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-sm">
+                {{ session('error') }}
+            </div>
+        @endif
+
         <!-- Formulario para Registrar Pieza / Marca -->
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-lg font-bold text-gray-800 mb-4">+ Agregar Pieza (Marca) a la Obra</h2>
@@ -91,7 +110,9 @@
                 @csrf
                 <div>
                     <label class="block text-xs font-medium text-gray-700">Marca / Clave Pieza</label>
-                    <input type="text" name="clave_marca_pieza" placeholder="Ej. C1, TB1" required class="w-full mt-1 p-2 text-sm border rounded-lg">
+                    <input type="text" name="clave_marca_pieza" value="{{ old('clave_marca_pieza') }}" placeholder="Ej. C1, TB1" required
+                           @error('clave_marca_pieza') aria-invalid="true" aria-describedby="errores-pieza" @enderror
+                           class="w-full mt-1 p-2 text-sm border rounded-lg @error('clave_marca_pieza') border-red-500 @enderror">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700">Tipo Estructura</label>
@@ -107,7 +128,10 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-700">Cantidad</label>
-                    <input type="number" name="cantidad" value="1" min="1" required class="w-full mt-1 p-2 text-sm border rounded-lg">
+                    <input type="hidden" name="cantidad" value="1">
+                    <p class="mt-1 p-2 text-sm border rounded-lg bg-gray-50 text-gray-700">
+                        1 pza.
+                    </p>
                 </div>
                 <div class="md:col-span-4 flex justify-end">
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
@@ -198,13 +222,13 @@
                                                 Editar
                                             </a>
                                             @if($pieza->sinFasesRegistradas())
-                                                <form action="{{ route('piezas.destroy', $pieza->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar la pieza {{ $pieza->clave_marca_pieza }}? Esta acción no se puede deshacer.');">
+                                                <form id="form-eliminar-pieza-{{ $pieza->id }}" action="{{ route('piezas.destroy', $pieza->id) }}" method="POST" class="hidden">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" aria-label="Eliminar pieza {{ $pieza->clave_marca_pieza }}" class="text-red-600 font-semibold hover:underline">
-                                                        Eliminar
-                                                    </button>
                                                 </form>
+                                                <x-confirmar-eliminacion
+                                                    :form-id="'form-eliminar-pieza-' . $pieza->id"
+                                                    :titulo="'Eliminar pieza ' . $pieza->clave_marca_pieza" />
                                             @endif
                                         </div>
                                     </td>

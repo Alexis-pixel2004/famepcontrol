@@ -44,10 +44,10 @@ El sistema se compone de:
 | Vistas Blade | 43 |
 | Tablas | 20 (14 de dominio + 6 de infraestructura) |
 | Suites de prueba | 16 |
-| Checks | 603 |
-| Resultado al corte | 603 OK, 0 FAIL |
+| Checks | 685 |
+| Resultado al corte | 685 OK, 0 FAIL |
 
-> Conteos actualizados el 22-nov-2026: se agregó el orden secuencial de fases, la edición/eliminación de asignaciones (3 rutas, 1 vista y 1 suite), el cierre de fases conserva el operario ya asignado sin volver a elegirlo manteniendo todas las validaciones, el historial tiene un botón de actualización para Producción y Calidad, el área de clientes permite activar/desactivar el código y eliminar cuentas sin obras ni historial (3 rutas y 1 vista), y el login muestra el logo local `logo-famep.png` sobre el título. Las suites existentes se reanclaron a la semilla real. La regresión completa quedó en 16/16 suites limpias.
+> Conteos actualizados el 22-nov-2026: se agregó el orden secuencial de fases, la edición/eliminación de asignaciones (3 rutas, 1 vista y 1 suite), el cierre de fases conserva el operario ya asignado sin volver a elegirlo manteniendo todas las validaciones, el historial tiene un botón de actualización para Producción y Calidad, el área de clientes permite activar/desactivar el código y eliminar cuentas sin obras ni historial (3 rutas y 1 vista), y el login muestra el logo local `logo-famep.png` sobre el título. Las suites existentes se reanclaron a la semilla real. Se agregó RN-24: la fecha de compromiso debe ser posterior a la fecha de inicio (no se permite el mismo día), con validación en alta y edición, ayuda accesible y 5 checks nuevos. Se agregó RN-25: la cantidad queda fija en 1 al agregar piezas, con campo oculto, merge en el servidor y 4 checks nuevos. Se agregó RN-26: **Producción conserva su panel histórico con los dictámenes de Calidad**, mientras Calidad estrena un panel distinto de actividad del taller (fase agregada y pieza nueva desde `logs_auditoria`), sin sus propias acciones; si la pieza se elimina, el aviso se conserva como `registro_eliminado` sin enlace roto. Un mismo endpoint devuelve el payload según el rol y cada campana usa su propio componente. Se agregó RN-27: los errores de validación y los bloqueos del servidor se muestran en el detalle de obra (marca duplicada, campo con `aria-invalid` y valor conservado). Se agregó RN-28: **todas las eliminaciones** (obras, piezas, operarios, clientes, asignaciones y dictámenes) usan el mismo modal propio accesible en vez del `confirm` del navegador. La regresión completa quedó en 17/17 suites limpias.
 
 ---
 
@@ -231,6 +231,11 @@ El seeder crea cuentas de demostración:
 | RN-21 | Al cerrar una fase aprobada sin enviar `operario_id`, se conserva el operario asignado y se valida igual que uno elegido manualmente |
 | RN-22 | El código de acceso del cliente puede activarse o desactivarse; inactivo no da acceso al portal |
 | RN-23 | No se elimina un cliente con obras asignadas ni con registros que lo referencien; se desactiva en su lugar |
+| RN-24 | La fecha de compromiso de una obra debe ser posterior a la fecha de inicio; no se permite el mismo día |
+| RN-25 | Al agregar una pieza, la cantidad queda fija en 1 |
+| RN-26 | Producción conserva su panel de dictámenes de Calidad; Calidad tiene un panel distinto de actividad del taller (fase agregada y pieza nueva), sin sus propios dictámenes |
+| RN-27 | Los errores de validación y bloqueo se muestran en pantalla en el detalle de obra |
+| RN-28 | Todas las eliminaciones (obras, piezas, operarios, clientes, asignaciones y dictámenes) se confirman con un modal de la plataforma, no con el `confirm` del navegador |
 
 ---
 
@@ -292,7 +297,7 @@ Controladores ──► Modelos Eloquent ──► PostgreSQL 18
 | Automatización | n8n | Webhook `/famep-alerta-calidad` |
 | Mensajería | Evolution API | 1.8.2, instancia `famep-wa` |
 | Contenedores | Docker Compose | Proyecto `famep` / `famep-prod` |
-| Pruebas | Harness propio | 16 suites |
+| Pruebas | Harness propio | 17 suites |
 
 ### 5.4 Estructura de carpetas
 
@@ -323,7 +328,7 @@ famep-app/
 ├── resources/views/          (42)
 ├── routes/web.php
 ├── storage/app/public/       (evidencias)
-├── tests/harness/            (16 suites + bootstrap)
+├── tests/harness/            (17 suites + bootstrap)
 ├── docker-compose.yml
 ├── docker-compose.prod.yml
 └── composer.json
@@ -568,8 +573,13 @@ Muestra:
 - Avance por obra.
 - Fase actual por pieza.
 - Últimas 5 obras.
-- Notificaciones recientes de calidad.
-- Endpoint JSON `/api/notificaciones-calidad` para el dropdown.
+- Panel de notificaciones por rol (RN-26):
+  - **Producción:** conserva su panel histórico «Notificaciones de Calidad» con los últimos 8 dictámenes (`resultado`, `descripción`, inspector, obra, marca y enlace). Componente `dropdown-notificaciones`.
+  - **Calidad:** panel «Actividad del Taller» con fases agregadas y piezas nuevas leídas desde `logs_auditoria`, excluyendo sus propias acciones. Componente `dropdown-actividad-taller`.
+  - **Portal:** sin campana.
+- Un solo endpoint JSON `/api/notificaciones-calidad` (`api.notificaciones`) devuelve el payload correspondiente al rol; otros roles reciben `[]`.
+- Si la pieza o fase ya no existe, el aviso de Calidad se conserva como `registro_eliminado`, se reconstruye obra/marca desde `datos_nuevos` y se omite `url_pieza`.
+- El `localStorage` del badge es por usuario, para que no se mezclen los contadores entre roles en el mismo navegador.
 
 ### 7.3 Obras
 
@@ -577,23 +587,23 @@ Muestra:
 
 - Código único.
 - Nombre y cliente textual.
-- Fechas de inicio y compromiso.
+- Fechas de inicio y compromiso; el compromiso debe ser posterior al inicio (RN-24).
 - Cuenta de cliente opcional (solo rol 3).
 - Estatus inicial `Pendiente`.
 
-**Edición:** solo Producción.
+**Edición:** solo Producción, aplicando la misma regla de fechas (RN-24).
 
-**Eliminación:** solo Producción y solo si la obra está `Pendiente` (sin avance).
+**Eliminación:** solo Producción y solo si la obra está `Pendiente` (sin avance). La confirmación se hace con el modal compartido de la plataforma (`x-confirmar-eliminacion`), accesible con teclado y lector de pantalla; ya no se usa el `confirm` del navegador (RN-28). Lo mismo aplica al eliminar piezas, operarios, clientes, asignaciones y dictámenes.
 
-**Detalle:** piezas, KPIs, avance, piezas liberadas, en reproceso y pendientes.
+**Detalle:** piezas, KPIs, avance, piezas liberadas, en reproceso y pendientes. Los errores de validación y los bloqueos del servidor se muestran en rojo dentro de la vista (RN-27).
 
 ### 7.4 Piezas
 
 **Alta:**
 
 - Marca normalizada a mayúsculas.
-- Única por obra.
-- Tipo de estructura, peso y cantidad.
+- Única por obra; el rechazo se muestra en pantalla con el mensaje «Ya existe una pieza con esa marca en esta obra.» y el campo conserva lo escrito (RN-27).
+- Tipo de estructura y peso; cantidad fija en 1 (RN-25).
 - Estatus inicial `Pendiente`.
 
 **Edición:**
@@ -829,7 +839,7 @@ Evolution API: GET /instance/connect/famep-wa
 | PUT | `/calidad/{id}` | `calidad.update` | Actualizar dictamen |
 | DELETE | `/calidad/{id}` | `calidad.destroy` | Eliminar dictamen |
 | POST | `/fases/{fasePiezaId}/evidencia` | `evidencia.store` | Adjuntar foto |
-| GET | `/api/notificaciones-calidad` | `api.notificaciones` | JSON de notificaciones |
+| GET | `/api/notificaciones-calidad` | `api.notificaciones` | JSON por rol: dictámenes para Producción, actividad del taller para Calidad |
 | GET | `/clientes` | `clientes.index` | Listado de clientes |
 | GET | `/clientes/crear` | `clientes.create` | Alta de cliente |
 | POST | `/clientes` | `clientes.store` | Guardar cliente |
@@ -889,7 +899,7 @@ Evolution API: GET /instance/connect/famep-wa
 | Portal | `portal/acceso`, `portal/index`, `portal/show` |
 | Reportes | `reportes/index` y 6 reportes |
 | Parciales de reportes | filtros, gráfica, icono |
-| Componentes | sidebar, notificaciones, toggle |
+| Componentes | sidebar, notificaciones (Producción), actividad-taller (Calidad), confirmar-eliminacion, toggle |
 | Otros | `welcome` (plantilla Laravel, sin uso funcional) |
 
 ### 9.2 Convenciones de interfaz
@@ -947,29 +957,30 @@ El proyecto usa un **harness propio** en `tests/harness/`:
 docker compose exec -T app php tests/harness/bootstrap_test.php tests/harness/<suite>.php
 ```
 
-### 11.3 Suites y resultados al 21-nov-2026
+### 11.3 Suites y resultados al 22-nov-2026
 
 | Suite | Checks | Resultado |
 |---|---:|---|
 | `flujo` | 15 | 15 OK |
 | `estatus_obra` | 23 | 23 OK |
-| `vistas` | 38 | 38 OK |
-| `portal` | 65 | 65 OK |
-| `obras_gestion` | 31 | 31 OK |
-| `piezas_gestion` | 33 | 33 OK |
+| `vistas` | 42 | 42 OK |
+| `portal` | 67 | 67 OK |
+| `obras_gestion` | 45 | 45 OK |
+| `operarios_gestion` | 54 | 54 OK |
+| `piezas_gestion` | 46 | 46 OK |
 | `dictamenes_gestion` | 88 | 88 OK |
 | `perfil_gestion` | 25 | 25 OK |
 | `reportes_gestion` | 80 | 80 OK |
-| `operarios_gestion` | 52 | 52 OK |
 | `auditoria_gestion` | 40 | 40 OK |
 | `zona_horaria` | 8 | 8 OK |
 | `whatsapp_flujo` | 23 | 23 OK |
 | `asignacion_operarios` | 27 | 27 OK |
 | `whatsapp_qr` | 25 | 25 OK |
 | `fases_orden_gestion` | 30 | 30 OK |
-| **Total** | **603** | **603 OK, 0 FAIL** |
+| `notificaciones_calidad` | 47 | 47 OK |
+| **Total** | **685** | **685 OK, 0 FAIL** |
 
-**Sin fallos conocidos al 21-nov-2026.** Los 7 fallos anteriores dependían de datos de demostración; tras el saneamiento y la semilla de la opción B las suites se reanclaron a la obra real `OB-2026-001`.
+**Sin fallos conocidos al 22-nov-2026.** Los 7 fallos anteriores dependían de datos de demostración; tras el saneamiento y la semilla de la opción B las suites se reanclaron a la obra real `OB-2026-001`.
 
 Baseline sembrado para las pruebas (obra `OB-2026-001`, pieza `TB1`):
 
@@ -1161,6 +1172,11 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 | Reactivación de fase | `ObservacionCalidadController.php`, `FasePieza.php` |
 | B4: no reasignar obras de otro cliente | `ClienteController.php`, `clientes/index.blade.php` |
 | RN-22/RN-23: activar/desactivar y eliminar cliente | `ClienteController.php`, `routes/web.php`, `clientes/index.blade.php`, `clientes/edit.blade.php`, `tests/harness/portal.php` |
+| RN-24: compromiso posterior al inicio | `ObraController.php`, `obras/create.blade.php`, `obras/edit.blade.php`, `tests/harness/obras_gestion.php` |
+| RN-25: cantidad fija en 1 al agregar pieza | `PiezaController.php`, `obras/show.blade.php`, `tests/harness/piezas_gestion.php` |
+| RN-26: paneles de notificaciones por rol | `DashboardController.php`, `dashboard.blade.php`, `components/dropdown-notificaciones.blade.php`, `components/dropdown-actividad-taller.blade.php`, `tests/harness/notificaciones_calidad.php` |
+| RN-27: errores visibles en detalle de obra | `obras/show.blade.php`, `tests/harness/piezas_gestion.php` |
+| RN-28: confirmación propia en todas las eliminaciones | `components/confirmar-eliminacion.blade.php`, `obras/index.blade.php`, `obras/show.blade.php`, `operarios/index.blade.php`, `clientes/index.blade.php`, `piezas/show.blade.php`, `piezas/partials/observaciones.blade.php`, `tests/harness/obras_gestion.php`, `tests/harness/operarios_gestion.php`, `tests/harness/piezas_gestion.php`, `tests/harness/portal.php`, `tests/harness/vistas.php` |
 | B5: cliente de obra debe ser rol 3 | `ObraController.php` |
 | C3: marca única por obra | `PiezaController.php` |
 | D9: evidencia en fase válida y abierta | `EvidenciaController.php` |
@@ -1190,7 +1206,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 ### 14.2 Pendientes
 
-1. Actualizar conteos de pruebas en README (la documentación maestro ya quedó al 21-nov-2026).
+1. Actualizar conteos de pruebas en README (la documentación maestro ya quedó al 22-nov-2026).
 2. Documentar formalmente las reglas A5/A6/A8/A9/B4/B5/C3/D9.
 3. Corregir la afirmación “no es repositorio Git”.
 4. Crear diccionario de datos y ERD.
@@ -1266,7 +1282,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 | `docker/postgres/init/01-inicial.sql` | Esquema y datos iniciales |
 | `docker/web/nginx.conf` | Alias de evidencias y límites |
 | `docker-compose.yml` / `.prod.yml` | Infraestructura dev/prod |
-| `tests/harness/` | 16 suites + bootstrap |
+| `tests/harness/` | 17 suites + bootstrap |
 | `docs/` | Documentación técnica existente |
 
 ### B. Documentos existentes y estado
@@ -1285,21 +1301,25 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 | Aspecto | Valor |
 |---|---|
 | Rama | `dev` |
-| Commits | 7 |
-| Archivos modificados sin commitear | 29 |
-| Sin seguimiento | `.agents/`, `skills/`, `skills-lock.json`, `app/Http/Controllers/WhatsAppController.php`, `backups/`, `docs/documentacion1.md`, `public/images/`, `resources/views/clientes/edit.blade.php`, `resources/views/piezas/fases/`, `resources/views/whatsapp/`, `tests/harness/asignacion_operarios.php`, `tests/harness/fases_orden_gestion.php`, `tests/harness/whatsapp_qr.php` |
+| Commits | 8 |
+| Archivos modificados sin commitear | 19 |
+| Sin seguimiento | `.agents/`, `backups/`, `skills-lock.json`, `skills/`, `resources/views/components/confirmar-eliminacion.blade.php`, `resources/views/components/dropdown-actividad-taller.blade.php`, `tests/harness/notificaciones_calidad.php` |
 
 ### D. Resultado de la última verificación
 
 ```text
-16 suites
-603 checks
-603 OK
+17 suites
+685 checks
+685 OK
 0 FAIL
 Rollback correcto en todas las suites
 fases_orden_gestion: 30 OK, 0 FAIL
-vistas: 38 OK, 0 FAIL
-portal: 65 OK, 0 FAIL
+notificaciones_calidad: 47 OK, 0 FAIL
+obras_gestion: 45 OK, 0 FAIL
+operarios_gestion: 54 OK, 0 FAIL
+piezas_gestion: 46 OK, 0 FAIL
+vistas: 42 OK, 0 FAIL
+portal: 67 OK, 0 FAIL
 whatsapp_qr: 25 OK, 0 FAIL
 BD sembrada: 1 obra, 1 pieza, 3 fases, 1 observación, 1 operario, 3 habilitaciones, 3 usuarios, 0 sesiones
 Capturas manuales posteriores pueden aumentar esos conteos (no se borran sin autorización)

@@ -41,13 +41,13 @@
                         <a href="{{ route('calidad.edit', $obs->id) }}" aria-label="Editar dictamen #{{ $obs->id }}" class="text-slate-600 font-semibold hover:underline">
                             Editar
                         </a>
-                        <form action="{{ route('calidad.destroy', $obs->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar este dictamen de calidad? Esta acción no se puede deshacer.');">
+                        <form id="form-eliminar-dictamen-{{ $obs->id }}" action="{{ route('calidad.destroy', $obs->id) }}" method="POST" class="hidden">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" aria-label="Eliminar dictamen #{{ $obs->id }}" class="text-red-600 font-semibold hover:underline">
-                                Eliminar
-                            </button>
                         </form>
+                        <x-confirmar-eliminacion
+                            :form-id="'form-eliminar-dictamen-' . $obs->id"
+                            :titulo="'Eliminar dictamen #' . $obs->id" />
                     </div>
                 @elseif(auth()->user()->esCalidad())
                     <p class="text-[10px] text-slate-500 pt-1 italic">

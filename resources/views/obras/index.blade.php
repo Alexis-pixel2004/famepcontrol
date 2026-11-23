@@ -68,13 +68,14 @@
                                     Editar
                                 </a>
                                 @if($obra->estatus === 'Pendiente')
-                                    <form action="{{ route('obras.destroy', $obra->id) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar la obra {{ $obra->codigo_obra }}? Esta acción no se puede deshacer.');">
+                                    <form id="form-eliminar-obra-{{ $obra->id }}" action="{{ route('obras.destroy', $obra->id) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" aria-label="Eliminar obra {{ $obra->codigo_obra }}" class="text-red-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
-                                            Eliminar
-                                        </button>
                                     </form>
+                                    <x-confirmar-eliminacion
+                                        :form-id="'form-eliminar-obra-' . $obra->id"
+                                        :titulo="'Eliminar obra ' . $obra->codigo_obra"
+                                        mensaje="Esta acción no se puede deshacer." />
                                 @endif
                             @endif
                             <a href="{{ route('obras.show', $obra->id) }}" aria-label="Ver detalles de la obra {{ $obra->codigo_obra }}" class="text-blue-600 font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">

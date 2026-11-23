@@ -21,8 +21,12 @@
         </div>
         
         <div class="flex items-center space-x-3">
-            <!-- Único punto de notificaciones: Componente Dropdown -->
-            <x-dropdown-notificaciones :notificaciones="$notificacionesCalidad" />
+            <!-- Panel de notificaciones por rol -->
+            @if (auth()->user()->esCalidad())
+                <x-dropdown-actividad-taller />
+            @elseif (auth()->user()->esProduccion())
+                <x-dropdown-notificaciones :notificaciones="$notificacionesCalidad" />
+            @endif
 
             <span class="hidden md:inline-block text-xs bg-slate-700 px-3 py-1 rounded-full">
                 {{ Auth::user()->nombre ?? Auth::user()->name }}

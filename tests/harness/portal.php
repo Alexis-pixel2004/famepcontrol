@@ -165,6 +165,8 @@ check(str_contains($v, 'Estado') && str_contains($v, 'Acciones'), 'clientes.inde
 check(str_contains($v, route('clientes.edit', $cliente->id)), 'clientes.index: enlace Editar');
 check(str_contains($v, route('clientes.destroy', $cliente->id)), 'clientes.index: formulario Eliminar');
 check(str_contains($v, 'Activo'), 'clientes.index: chip de estado');
+check(! str_contains($v, 'confirm('), 'clientes.index: sin confirm nativo del navegador');
+check(str_contains($v, 'id="form-eliminar-cliente-'), 'clientes.index: modal propio para eliminar cliente');
 
 // Solo se puede gestionar una cuenta de cliente (rol 3).
 $resp = (new ClienteController)->edit(1);

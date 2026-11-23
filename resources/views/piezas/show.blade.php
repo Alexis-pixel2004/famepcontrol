@@ -203,15 +203,14 @@
                                        class="text-[11px] font-semibold text-blue-700 hover:text-blue-900 px-2 py-1 rounded border border-blue-200 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500">
                                         Editar asignación
                                     </a>
-                                    <form action="{{ route('fases.destroy', $hist->id) }}" method="POST"
-                                          onsubmit="return confirm('¿Eliminar la asignación de {{ $hist->fase->nombre }}? Esta acción no se puede deshacer.');">
+                                    <form id="form-eliminar-asignacion-{{ $hist->id }}" action="{{ route('fases.destroy', $hist->id) }}" method="POST" class="hidden">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit"
-                                                class="text-[11px] font-semibold text-red-700 hover:text-red-900 px-2 py-1 rounded border border-red-200 hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500">
-                                            Eliminar asignación
-                                        </button>
                                     </form>
+                                    <x-confirmar-eliminacion
+                                        :form-id="'form-eliminar-asignacion-' . $hist->id"
+                                        :titulo="'Eliminar asignación de ' . $hist->fase->nombre"
+                                        etiqueta="Eliminar asignación" />
                                 </div>
                             @endif
 

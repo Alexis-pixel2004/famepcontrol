@@ -40,11 +40,11 @@ class ObraController extends Controller
                 Rule::exists('usuarios', 'id')->where('rol_id', 3),
             ],
             'fecha_inicio' => 'required|date',
-            'fecha_compromiso' => 'required|date|after_or_equal:fecha_inicio',
+            'fecha_compromiso' => 'required|date|after:fecha_inicio',
         ], [
             'codigo_obra.unique' => 'El código de obra ya existe.',
             'cliente_usuario_id.exists' => 'La cuenta seleccionada no es un cliente con acceso al portal.',
-            'fecha_compromiso.after_or_equal' => 'La fecha de compromiso no puede ser anterior al inicio.',
+            'fecha_compromiso.after' => 'La fecha de compromiso debe ser posterior a la fecha de inicio.',
         ]);
 
         // Estatus inicial derivado: la obra nace sin avance.
@@ -146,11 +146,11 @@ public function show($id)
                 Rule::exists('usuarios', 'id')->where('rol_id', 3),
             ],
             'fecha_inicio' => 'required|date',
-            'fecha_compromiso' => 'required|date|after_or_equal:fecha_inicio',
+            'fecha_compromiso' => 'required|date|after:fecha_inicio',
         ], [
             'codigo_obra.unique' => 'El código de obra ya existe.',
             'cliente_usuario_id.exists' => 'La cuenta seleccionada no es un cliente con acceso al portal.',
-            'fecha_compromiso.after_or_equal' => 'La fecha de compromiso no puede ser anterior al inicio.',
+            'fecha_compromiso.after' => 'La fecha de compromiso debe ser posterior a la fecha de inicio.',
         ]);
 
         // El estatus es derivado de las piezas (recalcularEstatus): no se edita aquí.

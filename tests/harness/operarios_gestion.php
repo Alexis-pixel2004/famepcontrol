@@ -290,6 +290,8 @@ check($createCalidad instanceof \Illuminate\Http\RedirectResponse, 'Calidad no a
 
 echo "== Vista de indice (Produccion) ==\n";
 Auth::loginUsingId($produccion->id);
+// Sin fases habilitadas aparece el botón de eliminación: así se comprueba el modal.
+operarioDePrueba('CONF');
 $index = (new OperarioController)->index();
 check($index instanceof \Illuminate\View\View, 'index devuelve la vista');
 $html = $index->render();
@@ -297,6 +299,8 @@ check(str_contains($html, 'Operarios'), 'el titulo aparece');
 check(str_contains($html, 'Fases habilitadas'), 'se muestra la seccion de fases habilitadas');
 check(str_contains($html, 'Multifase') || str_contains($html, 'multifase'), 'la vista explica el concepto multifase');
 check(str_contains($html, 'Nuevo Operario'), 'se ofrece el alta');
+check(! str_contains($html, 'confirm('), 'operarios.index: sin confirm nativo del navegador');
+check(str_contains($html, 'id="form-eliminar-operario-'), 'operarios.index: modal propio para eliminar operario');
 
 echo "== Formulario create con checkboxes de fases ==\n";
 $create = (new OperarioController)->create();

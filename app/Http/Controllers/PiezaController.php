@@ -17,6 +17,8 @@ class PiezaController extends Controller
         // que la unicidad por obra no dependa de cómo la escriba el usuario.
         $request->merge([
             'clave_marca_pieza' => strtoupper(trim((string) $request->input('clave_marca_pieza'))),
+            // RN-25: el alta fija la cantidad en 1 aunque venga otro valor.
+            'cantidad'          => 1,
         ]);
 
         $validated = $request->validate([
@@ -27,7 +29,7 @@ class PiezaController extends Controller
             ],
             'tipo_estructura_id' => 'required|exists:cat_tipos_estructura,id',
             'peso_kg' => 'required|numeric|min:0',
-            'cantidad' => 'required|integer|min:1',
+            'cantidad' => 'required|integer|in:1',
         ], [
             'clave_marca_pieza.unique' => 'Ya existe una pieza con esa marca en esta obra.',
         ]);

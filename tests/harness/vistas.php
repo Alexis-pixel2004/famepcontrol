@@ -69,6 +69,8 @@ check(str_contains($h, '+ Registrar Avance en Taller'), 'piezas.show TB1: produc
 check(str_contains($h, 'Fases Finalizadas'), 'piezas.show TB1: columna de fases finalizadas');
 check(str_contains($h, 'data-operario-id="1"'), 'piezas.show TB1: el formulario expone el operario asignado');
 checkBotonHistorial($h, 'produccion');
+check(! str_contains($h, 'confirm('), 'piezas.show: sin confirm nativo del navegador');
+check(str_contains($h, 'id="form-eliminar-asignacion-'), 'piezas.show: modal propio para eliminar asignacion');
 
 $jsFases = file_get_contents(public_path('js/fases-evaluacion.js'));
 check(str_contains($jsFases, 'selectOperario.value = operarioActualId'), 'JS preselecciona el operario asignado');
@@ -89,6 +91,8 @@ check(str_contains($h, 'Dictaminar'), 'calidad: boton Dictaminar presente');
 check(! str_contains($h, '+ Registrar Avance en Taller'), 'calidad: NO ve el formulario de avance (gate produccion)');
 check(str_contains($h, 'Cerrada por Producción. No admite'), 'calidad: fases cerradas en solo lectura');
 checkBotonHistorial($h, 'calidad');
+check(! str_contains($h, 'confirm('), 'piezas.show calidad: sin confirm nativo del navegador');
+check(str_contains($h, 'id="form-eliminar-dictamen-'), 'piezas.show calidad: modal propio para eliminar dictamen');
 
 echo "\nResultado: {$GLOBALS['ok']} OK, {$GLOBALS['fail']} FAIL\n";
 
